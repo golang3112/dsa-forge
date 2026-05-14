@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Binary Search — DSA Forge</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0a0f; --surface:#111118; --surface2:#1a1a24;
+  --border:rgba(255,255,255,0.08); --border-bright:rgba(255,255,255,0.18);
+  --accent:#22d3ee; --accent2:#00f5a0; --accent3:#f59e0b;
+  --text:#f0f0f8; --muted:#6b7280; --danger:#ef4444; --purple:#a855f7;
+  --mono:'Space Mono',monospace; --display:'Syne',sans-serif;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:var(--display); min-height:100vh; }
+body::before {
+  content:''; position:fixed; inset:0;
+  background-image:linear-gradient(rgba(34,211,238,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,0.025) 1px,transparent 1px);
+  background-size:40px 40px; pointer-events:none; z-index:0;
+}
+.container { max-width:1100px; margin:0 auto; padding:0 2rem; position:relative; z-index:1; }
+nav { border-bottom:1px solid var(--border); padding:1.2rem 0; background:rgba(10,10,15,0.92); backdrop-filter:blur(12px); position:sticky; top:0; z-index:100; }
+.nav-inner { display:flex; align-items:center; justify-content:space-between; }
+.logo { font-family:var(--mono); font-size:1.1rem; color:#00f5a0; text-decoration:none; }
+.logo span { color:var(--text); }
+.nav-links { display:flex; gap:1.5rem; list-style:none; }
+.nav-links a { color:var(--muted); text-decoration:none; font-size:0.82rem; transition:color 0.2s; }
+.nav-links a:hover,.nav-links a.active { color:#00f5a0; }
+
+.page-hero { padding:4rem 0 2rem; }
+.breadcrumb { font-family:var(--mono); font-size:0.75rem; color:var(--muted); margin-bottom:1rem; }
+.breadcrumb a { color:var(--muted); text-decoration:none; }
+.page-title { font-size:clamp(2.5rem,5vw,4rem); font-weight:800; letter-spacing:-0.03em; margin-bottom:1rem; }
+.page-title span { color:var(--accent); }
+
+.tabs { display:flex; gap:4px; border-bottom:1px solid var(--border); margin:1.5rem 0 0; overflow-x:auto; }
+.tab-btn { font-family:var(--mono); font-size:0.78rem; padding:0.75rem 1.2rem; background:transparent; border:none; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; white-space:nowrap; transition:color 0.2s,border-color 0.2s; }
+.tab-btn:hover { color:var(--text); }
+.tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+.tab-content { display:none; padding:2.5rem 0; }
+.tab-content.active { display:block; }
+
+.pattern-tag { display:inline-block; font-family:var(--mono); font-size:0.7rem; color:var(--accent); border:1px solid rgba(34,211,238,0.3); padding:3px 10px; border-radius:999px; margin-bottom:0.75rem; }
+.pattern-name { font-size:1.8rem; font-weight:700; margin-bottom:0.75rem; }
+.pattern-desc { color:var(--muted); line-height:1.8; max-width:700px; font-size:0.95rem; margin-bottom:1.5rem; }
+
+.viz-box { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.5rem; margin-bottom:1.5rem; }
+.viz-title { font-family:var(--mono); font-size:0.72rem; color:var(--muted); margin-bottom:1.25rem; letter-spacing:0.06em; }
+
+/* Array cells */
+.arr-wrap { overflow-x:auto; padding-bottom:1.5rem; }
+.arr-row { display:flex; gap:5px; align-items:flex-end; min-width:max-content; }
+.arr-cell {
+  width:52px; height:52px; display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-size:0.88rem; font-weight:700;
+  background:var(--surface2); border:1.5px solid rgba(255,255,255,0.15);
+  border-radius:8px; transition:all 0.3s; position:relative; flex-shrink:0;
+}
+.arr-cell .cell-idx { position:absolute; bottom:-20px; font-size:0.6rem; color:var(--muted); font-family:var(--mono); }
+.arr-cell.lo  { border-top:3px solid #38bdf8; }
+.arr-cell.hi  { border-top:3px solid #f59e0b; }
+.arr-cell.mid { background:rgba(34,211,238,0.25); border-color:var(--accent); color:var(--accent); border-width:2px; }
+.arr-cell.found { background:rgba(0,245,160,0.25); border-color:#00f5a0; color:#00f5a0; border-width:2.5px; }
+.arr-cell.eliminated { opacity:0.28; }
+.arr-cell.pivot { background:rgba(168,85,247,0.2); border-color:#a855f7; }
+.arr-cell.in-range { background:rgba(34,211,238,0.08); }
+
+/* pointer labels */
+.ptr-label { font-family:var(--mono); font-size:0.65rem; position:absolute; top:-20px; }
+.ptr-lo  { color:#38bdf8; }
+.ptr-hi  { color:#f59e0b; }
+.ptr-mid { color:var(--accent); }
+
+/* Controls */
+.controls { display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1.25rem; align-items:center; }
+.ctrl-btn { font-family:var(--mono); font-size:0.72rem; padding:7px 15px; border-radius:7px; border:1px solid var(--border-bright); background:var(--surface2); color:var(--text); cursor:pointer; transition:all 0.15s; }
+.ctrl-btn:hover { border-color:var(--accent); color:var(--accent); }
+.ctrl-btn.primary { background:var(--accent); color:var(--bg); border-color:var(--accent); font-weight:700; }
+.ctrl-btn.primary:hover { opacity:0.85; }
+.status-line { font-family:var(--mono); font-size:0.75rem; color:var(--accent); min-height:1.6rem; margin-top:0.85rem; line-height:1.5; }
+
+/* Pointer legend */
+.legend { display:flex; gap:1.5rem; flex-wrap:wrap; font-family:var(--mono); font-size:0.72rem; color:var(--muted); margin-bottom:1rem; }
+.legend-item { display:flex; align-items:center; gap:6px; }
+.legend-dot { width:10px; height:10px; border-radius:2px; }
+
+/* Search input */
+.search-row { display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap; margin-bottom:1rem; }
+.search-row label { font-family:var(--mono); font-size:0.75rem; color:var(--muted); }
+.search-row input { font-family:var(--mono); font-size:0.85rem; padding:6px 12px; background:var(--surface2); border:1px solid var(--border-bright); border-radius:7px; color:var(--text); width:100px; }
+
+/* Two col */
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-top:1.5rem; }
+@media(max-width:700px) { .two-col { grid-template-columns:1fr; } }
+
+.code-block { background:#0d1117; border:1px solid var(--border); border-radius:10px; padding:1.25rem; overflow-x:auto; font-family:var(--mono); font-size:0.76rem; line-height:1.8; color:#e6edf3; }
+.code-block .kw  { color:#ff7b72; }
+.code-block .fn  { color:#d2a8ff; }
+.code-block .cm  { color:#8b949e; font-style:italic; }
+.code-block .num { color:#79c0ff; }
+.code-block .ac  { color:#22d3ee; }
+
+.info-box { background:rgba(34,211,238,0.05); border:1px solid rgba(34,211,238,0.2); border-radius:8px; padding:1rem 1.25rem; margin:1rem 0; }
+.info-box p { font-size:0.84rem; color:var(--muted); line-height:1.7; }
+.info-box strong { color:var(--accent); }
+
+/* Answer-space chart */
+.ans-bar-wrap { display:flex; align-items:flex-end; gap:3px; height:120px; margin:1rem 0; }
+.ans-bar { flex:1; border-radius:4px 4px 0 0; min-width:28px; transition:all 0.3s; position:relative; display:flex; align-items:flex-end; justify-content:center; }
+.ans-bar span { font-family:var(--mono); font-size:0.62rem; padding-bottom:3px; }
+.ans-bar.feasible { background:linear-gradient(to top,rgba(0,245,160,0.2),rgba(0,245,160,0.5)); border:1px solid rgba(0,245,160,0.4); }
+.ans-bar.infeasible { background:linear-gradient(to top,rgba(239,68,68,0.15),rgba(239,68,68,0.3)); border:1px solid rgba(239,68,68,0.3); }
+.ans-bar.mid-bar { border-color:var(--accent); background:rgba(34,211,238,0.3); }
+
+.q-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:1.25rem 1.5rem; cursor:pointer; transition:border-color 0.2s; margin-bottom:0.75rem; }
+.q-card:hover { border-color:var(--border-bright); }
+.q-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+.q-title { font-weight:600; font-size:0.9rem; }
+.q-difficulty { font-family:var(--mono); font-size:0.7rem; padding:2px 8px; border-radius:999px; }
+.easy   { color:#00f5a0; border:1px solid rgba(0,245,160,0.3); }
+.medium { color:var(--accent3); border:1px solid rgba(245,158,11,0.3); }
+.hard   { color:var(--danger); border:1px solid rgba(239,68,68,0.3); }
+.q-body { display:none; margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border); }
+.q-body.open { display:block; }
+.q-desc { color:var(--muted); font-size:0.84rem; line-height:1.7; margin-bottom:0.75rem; }
+.q-approach { font-size:0.82rem; line-height:1.8; }
+.q-approach strong { color:var(--accent); }
+
+/* Complexity pill row */
+.complex-row { display:flex; gap:0.75rem; flex-wrap:wrap; margin:1rem 0; }
+.complex-pill { font-family:var(--mono); font-size:0.72rem; padding:4px 12px; border-radius:999px; }
+.c-green { background:rgba(0,245,160,0.1); border:1px solid rgba(0,245,160,0.3); color:#00f5a0; }
+.c-yellow { background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); color:#f59e0b; }
+.c-red    { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:#ef4444; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container nav-inner">
+    <a href="index.html" class="logo">DSA<span>Forge</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="arrays.html">Arrays</a></li>
+      <li><a href="trees.html">Trees</a></li>
+      <li><a href="graphs.html">Graphs</a></li>
+      <li><a href="dp.html">DP</a></li>
+      <li><a href="sorting.html">Sorting</a></li>
+      <li><a href="binary-search.html" class="active">Binary Search</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-hero">
+    <div class="breadcrumb"><a href="index.html">Home</a> / Binary Search</div>
+    <h1 class="page-title">Binary <span>Search</span></h1>
+    <p style="color:var(--muted);line-height:1.7;max-width:640px">
+      The most powerful O(log n) technique in interviews. Classic search, rotated arrays, first &amp; last position, and the answer-space template — all step-by-step.
+    </p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('classic',this)">Classic BS</button>
+    <button class="tab-btn" onclick="switchTab('firstlast',this)">First &amp; Last</button>
+    <button class="tab-btn" onclick="switchTab('rotated',this)">Rotated Array</button>
+    <button class="tab-btn" onclick="switchTab('answerspace',this)">Answer-Space</button>
+    <button class="tab-btn" onclick="switchTab('questions',this)">Questions</button>
+  </div>
+
+  <!-- ======================== CLASSIC ======================== -->
+  <div id="tab-classic" class="tab-content active">
+    <div class="pattern-tag">PATTERN — CLASSIC BINARY SEARCH</div>
+    <div class="pattern-name">Classic Binary Search</div>
+    <p class="pattern-desc">
+      On a sorted array, check the middle element. If too small, search right half; if too large, search left half. Eliminates half the search space each step → O(log n).
+    </p>
+
+    <div class="info-box">
+      <p><strong>Template:</strong> lo=0, hi=n-1. While lo≤hi: mid=(lo+hi)//2. Compare arr[mid] with target and halve. <strong>Beware:</strong> use <code>lo + (hi-lo)//2</code> instead of <code>(lo+hi)//2</code> to avoid integer overflow in other languages.</p>
+    </div>
+
+    <div class="viz-box">
+      <div class="viz-title">// CLASSIC BINARY SEARCH — type a target and watch lo/mid/hi converge</div>
+      <div class="search-row">
+        <label>Target:</label>
+        <input id="classic-target" type="number" value="23">
+        <button class="ctrl-btn primary" onclick="classicLoad()">Load</button>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#38bdf8"></div><span>lo</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div><span>mid</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div><span>hi</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00f5a0"></div><span>found</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,0.1)"></div><span>eliminated</span></div>
+      </div>
+      <div class="arr-wrap"><div class="arr-row" id="classic-arr"></div></div>
+      <div class="status-line" id="classic-status">Set a target and press Play</div>
+      <div class="controls">
+        <button class="ctrl-btn primary" onclick="classicPlay()">▶ Play</button>
+        <button class="ctrl-btn" onclick="classicStep()">Step →</button>
+        <button class="ctrl-btn" onclick="classicReset()">↺ Reset</button>
+      </div>
+    </div>
+
+    <div class="complex-row">
+      <span class="complex-pill c-green">Time O(log n)</span>
+      <span class="complex-pill c-green">Space O(1)</span>
+      <span class="complex-pill c-yellow">Requires sorted array</span>
+    </div>
+
+    <div class="two-col">
+      <div class="code-block">
+<span class="kw">def</span> <span class="fn">binary_search</span>(arr, target):
+  lo, hi = <span class="num">0</span>, len(arr) - <span class="num">1</span>
+
+  <span class="kw">while</span> lo <= hi:
+    mid = lo + (hi - lo) // <span class="num">2</span>  <span class="cm"># safe mid</span>
+
+    <span class="kw">if</span> arr[mid] == target:
+      <span class="kw">return</span> mid          <span class="cm"># found!</span>
+    <span class="kw">elif</span> arr[mid] < target:
+      lo = mid + <span class="num">1</span>        <span class="cm"># search right</span>
+    <span class="kw">else</span>:
+      hi = mid - <span class="num">1</span>        <span class="cm"># search left</span>
+
+  <span class="kw">return</span> -<span class="num">1</span>              <span class="cm"># not found</span>
+
+<span class="cm"># Each step: search space halves
+# n → n/2 → n/4 → … → 1
+# Steps needed: log₂(n)
+# For n=1,000,000: only ~20 steps!</span>
+      </div>
+      <div class="code-block">
+<span class="cm"># PYTHON BUILT-IN: bisect module</span>
+<span class="kw">import</span> bisect
+
+arr = [<span class="num">1</span>,<span class="num">3</span>,<span class="num">5</span>,<span class="num">7</span>,<span class="num">9</span>,<span class="num">11</span>,<span class="num">13</span>]
+
+<span class="cm"># bisect_left: leftmost insert position</span>
+i = bisect.bisect_left(arr, <span class="num">7</span>)   <span class="cm"># → 3</span>
+
+<span class="cm"># bisect_right: rightmost insert position</span>
+j = bisect.bisect_right(arr, <span class="num">7</span>)  <span class="cm"># → 4</span>
+
+<span class="cm"># Check if target exists:</span>
+<span class="kw">if</span> i < len(arr) <span class="kw">and</span> arr[i] == <span class="num">7</span>:
+  print(<span class="ac">"Found at"</span>, i)
+
+<span class="cm"># Count occurrences of target:
+# count = bisect_right(arr,t) - bisect_left(arr,t)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== FIRST & LAST ======================== -->
+  <div id="tab-firstlast" class="tab-content">
+    <div class="pattern-tag">PATTERN — BOUNDARY SEARCH</div>
+    <div class="pattern-name">First &amp; Last Position</div>
+    <p class="pattern-desc">
+      When duplicates exist, find the leftmost or rightmost occurrence. The trick: even when you find the target, keep searching in the relevant direction instead of returning immediately.
+    </p>
+
+    <div class="viz-box">
+      <div class="viz-title">// FIND FIRST AND LAST POSITION — array with duplicates</div>
+      <div class="search-row">
+        <label>Target:</label>
+        <input id="fl-target" type="number" value="7">
+        <button class="ctrl-btn primary" onclick="flLoad()">Load</button>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#38bdf8"></div>lo</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>mid</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>hi</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00f5a0"></div>found boundary</div>
+      </div>
+      <div class="arr-wrap"><div class="arr-row" id="fl-arr"></div></div>
+      <div style="font-family:var(--mono);font-size:0.75rem;margin-top:1rem;display:flex;gap:2rem;flex-wrap:wrap;">
+        <span style="color:var(--muted)">Searching: <span id="fl-which" style="color:var(--accent)">—</span></span>
+        <span style="color:var(--muted)">First: <span id="fl-first" style="color:#00f5a0">—</span></span>
+        <span style="color:var(--muted)">Last: <span id="fl-last" style="color:#00f5a0">—</span></span>
+      </div>
+      <div class="status-line" id="fl-status">Set a target and press Play</div>
+      <div class="controls">
+        <button class="ctrl-btn primary" onclick="flPlay()">▶ Play</button>
+        <button class="ctrl-btn" onclick="flStep()">Step →</button>
+        <button class="ctrl-btn" onclick="flReset()">↺ Reset</button>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="code-block">
+<span class="cm"># FIND FIRST (leftmost) occurrence</span>
+<span class="kw">def</span> <span class="fn">find_first</span>(arr, target):
+  lo, hi = <span class="num">0</span>, len(arr) - <span class="num">1</span>
+  result = -<span class="num">1</span>
+
+  <span class="kw">while</span> lo <= hi:
+    mid = lo + (hi - lo) // <span class="num">2</span>
+    <span class="kw">if</span> arr[mid] == target:
+      result = mid      <span class="cm"># save, keep going LEFT</span>
+      hi = mid - <span class="num">1</span>
+    <span class="kw">elif</span> arr[mid] < target:
+      lo = mid + <span class="num">1</span>
+    <span class="kw">else</span>:
+      hi = mid - <span class="num">1</span>
+  <span class="kw">return</span> result
+
+<span class="cm"># FIND LAST (rightmost) occurrence</span>
+<span class="kw">def</span> <span class="fn">find_last</span>(arr, target):
+  lo, hi = <span class="num">0</span>, len(arr) - <span class="num">1</span>
+  result = -<span class="num">1</span>
+
+  <span class="kw">while</span> lo <= hi:
+    mid = lo + (hi - lo) // <span class="num">2</span>
+    <span class="kw">if</span> arr[mid] == target:
+      result = mid      <span class="cm"># save, keep going RIGHT</span>
+      lo = mid + <span class="num">1</span>
+    <span class="kw">elif</span> arr[mid] < target:
+      lo = mid + <span class="num">1</span>
+    <span class="kw">else</span>:
+      hi = mid - <span class="num">1</span>
+  <span class="kw">return</span> result
+      </div>
+      <div class="code-block">
+<span class="cm"># Combined solution (LC 34)</span>
+<span class="kw">def</span> <span class="fn">search_range</span>(nums, target):
+  <span class="kw">return</span> [find_first(nums, target),
+          find_last(nums, target)]
+
+<span class="cm"># KEY INSIGHT:
+# Normal BS: return immediately on match.
+# First pos: on match → hi = mid-1
+#             (keep searching left)
+# Last pos:  on match → lo = mid+1
+#             (keep searching right)
+#
+# Both still run in O(log n).
+# Run twice → O(2 log n) = O(log n).
+#
+# ALTERNATIVE: use bisect
+# first = bisect_left(arr, target)
+# last  = bisect_right(arr, target) - 1
+# if first==len or arr[first]!=target:
+#     return [-1,-1]</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== ROTATED ======================== -->
+  <div id="tab-rotated" class="tab-content">
+    <div class="pattern-tag">PATTERN — ROTATED SORTED ARRAY</div>
+    <div class="pattern-name">Search in Rotated Array</div>
+    <p class="pattern-desc">
+      Array was sorted then rotated at some pivot. Binary search still works — one half is always properly sorted. Determine which half is sorted, check if target is in it, then search that half.
+    </p>
+
+    <div class="viz-box">
+      <div class="viz-title">// ROTATED SORTED ARRAY — one half always sorted</div>
+      <div class="search-row">
+        <label>Target:</label>
+        <input id="rot-target" type="number" value="6">
+        <button class="ctrl-btn primary" onclick="rotLoad()">Load</button>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#38bdf8"></div>lo</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>mid</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>hi</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>pivot area</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00f5a0"></div>found</div>
+      </div>
+      <div class="arr-wrap"><div class="arr-row" id="rot-arr"></div></div>
+      <div class="status-line" id="rot-status">Set a target and press Play</div>
+      <div class="controls">
+        <button class="ctrl-btn primary" onclick="rotPlay()">▶ Play</button>
+        <button class="ctrl-btn" onclick="rotStep()">Step →</button>
+        <button class="ctrl-btn" onclick="rotReset()">↺ Reset</button>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="code-block">
+<span class="kw">def</span> <span class="fn">search_rotated</span>(arr, target):
+  lo, hi = <span class="num">0</span>, len(arr) - <span class="num">1</span>
+
+  <span class="kw">while</span> lo <= hi:
+    mid = lo + (hi - lo) // <span class="num">2</span>
+    <span class="kw">if</span> arr[mid] == target: <span class="kw">return</span> mid
+
+    <span class="cm"># Left half is sorted</span>
+    <span class="kw">if</span> arr[lo] <= arr[mid]:
+      <span class="kw">if</span> arr[lo] <= target < arr[mid]:
+        hi = mid - <span class="num">1</span>  <span class="cm"># target in left</span>
+      <span class="kw">else</span>:
+        lo = mid + <span class="num">1</span>  <span class="cm"># target in right</span>
+    <span class="cm"># Right half is sorted</span>
+    <span class="kw">else</span>:
+      <span class="kw">if</span> arr[mid] < target <= arr[hi]:
+        lo = mid + <span class="num">1</span>  <span class="cm"># target in right</span>
+      <span class="kw">else</span>:
+        hi = mid - <span class="num">1</span>  <span class="cm"># target in left</span>
+
+  <span class="kw">return</span> -<span class="num">1</span>
+      </div>
+      <div class="code-block">
+<span class="cm"># WHY IT WORKS:
+# After a rotation, cutting at mid gives
+# at least ONE fully sorted half.
+# Rule: if arr[lo] ≤ arr[mid] → left is sorted.
+# Otherwise → right is sorted.
+#
+# Once you know which half is sorted,
+# check if target lies within it
+# (simple range check). If yes, binary
+# search that half; else search the other.
+#
+# FIND MINIMUM IN ROTATED ARRAY (LC 153):
+# The minimum is just past the pivot.
+# lo=0, hi=n-1. While arr[mid] > arr[hi]:
+#   lo = mid+1  (min is in right half)
+# Else: hi = mid  (mid could be min)
+# Return arr[lo]
+
+<span class="cm"># WITH DUPLICATES (LC 81):
+# If arr[lo]==arr[mid]==arr[hi]: lo++,hi--
+# Otherwise same logic. Worst O(n).</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== ANSWER-SPACE ======================== -->
+  <div id="tab-answerspace" class="tab-content">
+    <div class="pattern-tag">PATTERN — ANSWER SPACE BINARY SEARCH</div>
+    <div class="pattern-name">Binary Search on the Answer</div>
+    <p class="pattern-desc">
+      Don't search the array — search the answer space. If answers form a monotone feasibility function (below threshold = infeasible, above = feasible), binary search for the boundary. Converts O(n²) to O(n log n).
+    </p>
+
+    <div class="info-box">
+      <p><strong>Template:</strong> lo = min possible answer, hi = max possible answer. While lo &lt; hi: mid = (lo+hi)//2. If feasible(mid): hi=mid. Else: lo=mid+1. Return lo.</p>
+    </div>
+
+    <div class="viz-box">
+      <div class="viz-title">// KOKO EATING BANANAS — find minimum speed to eat all bananas in H hours</div>
+      <div style="font-family:var(--mono);font-size:0.78rem;color:var(--muted);margin-bottom:0.75rem;">
+        Piles: <span style="color:var(--accent)">[3, 6, 7, 11]</span> &nbsp;|&nbsp; H (hours): <span style="color:var(--accent)">8</span> &nbsp;|&nbsp; Find: min speed k
+      </div>
+      <div style="font-family:var(--mono);font-size:0.72rem;color:var(--muted);margin-bottom:6px;">Answer space (speed 1→11) — green = feasible (can finish in 8h):</div>
+      <div class="ans-bar-wrap" id="ans-bars"></div>
+      <div style="display:flex;gap:2rem;font-family:var(--mono);font-size:0.75rem;flex-wrap:wrap;margin-top:1rem;">
+        <span style="color:var(--muted)">lo: <span id="ans-lo" style="color:#38bdf8">—</span></span>
+        <span style="color:var(--muted)">hi: <span id="ans-hi" style="color:#f59e0b">—</span></span>
+        <span style="color:var(--muted)">mid: <span id="ans-mid" style="color:var(--accent)">—</span></span>
+        <span style="color:var(--muted)">answer: <span id="ans-result" style="color:#00f5a0">—</span></span>
+      </div>
+      <div class="status-line" id="ans-status">Press Play to binary-search the answer space</div>
+      <div class="controls">
+        <button class="ctrl-btn primary" onclick="ansPlay()">▶ Play</button>
+        <button class="ctrl-btn" onclick="ansStep()">Step →</button>
+        <button class="ctrl-btn" onclick="ansReset()">↺ Reset</button>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="code-block">
+<span class="kw">import</span> math
+
+<span class="kw">def</span> <span class="fn">min_eating_speed</span>(piles, h):
+  lo, hi = <span class="num">1</span>, max(piles)
+
+  <span class="kw">while</span> lo < hi:
+    mid = (lo + hi) // <span class="num">2</span>
+    <span class="kw">if</span> <span class="fn">can_finish</span>(piles, h, mid):
+      hi = mid       <span class="cm"># mid works, try slower</span>
+    <span class="kw">else</span>:
+      lo = mid + <span class="num">1</span>  <span class="cm"># too slow, go faster</span>
+
+  <span class="kw">return</span> lo  <span class="cm"># minimum valid speed</span>
+
+<span class="kw">def</span> <span class="fn">can_finish</span>(piles, h, k):
+  <span class="cm"># Hours needed at speed k</span>
+  <span class="kw">return</span> sum(math.ceil(p/k) <span class="kw">for</span> p <span class="kw">in</span> piles) <= h
+
+<span class="cm"># Time: O(n log m) — m=max(piles)
+# Instead of trying each speed 1..m: O(nm)</span>
+      </div>
+      <div class="code-block">
+<span class="cm"># MORE ANSWER-SPACE PROBLEMS:
+
+# Capacity to ship packages (LC 1011)
+# Binary search on ship capacity.
+# feasible(cap): can ship all in D days?
+
+# Split array largest sum (LC 410)
+# Binary search on maximum subarray sum.
+# feasible(mid): can we split with ≤m parts?
+
+# Median of two sorted arrays (LC 4)
+# Binary search on partition point.
+
+# Nth root (general):
+# Binary search on answer range [1, num].
+# feasible(mid): mid^n <= target
+
+# TEMPLATE:
+# lo, hi = min_ans, max_ans
+# while lo < hi:
+#   mid = (lo+hi)//2
+#   if feasible(mid): hi = mid
+#   else:             lo = mid+1
+# return lo   # or hi — same value</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== QUESTIONS ======================== -->
+  <div id="tab-questions" class="tab-content">
+    <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:1.5rem;">Famous Binary Search Questions</h2>
+
+    <div class="q-card" onclick="toggleQ(this)">
+      <div class="q-header"><span class="q-title">Binary Search (LeetCode 704)</span><span class="q-difficulty easy">Easy</span></div>
+      <div class="q-body"><p class="q-desc">Classic binary search on a sorted array.</p><div class="q-approach"><strong>Template:</strong> lo=0, hi=n-1. While lo≤hi: mid=(lo+hi)//2. Three-way compare and halve. Return -1 if not found. O(log n).</div></div>
+    </div>
+
+    <div class="q-card" onclick="toggleQ(this)">
+      <div class="q-header"><span class="q-title">Find Minimum in Rotated Sorted Array (LeetCode 153)</span><span class="q-difficulty medium">Medium</span></div>
+      <div class="q-body"><p class="q-desc">Find the minimum in a rotated sorted array without duplicates.</p><div class="q-approach"><strong>Approach:</strong> If arr[mid] &gt; arr[hi], the minimum is in the right half (lo=mid+1). Else hi=mid. When lo==hi, that's the minimum. O(log n). Key insight: minimum is always in the "unsorted" half.</div></div>
+    </div>
+
+    <div class="q-card" onclick="toggleQ(this)">
+      <div class="q-header"><span class="q-title">Search a 2D Matrix (LeetCode 74)</span><span class="q-difficulty medium">Medium</span></div>
+      <div class="q-body"><p class="q-desc">Search in an m×n matrix where each row is sorted and first element of each row is greater than the last of the previous row.</p><div class="q-approach"><strong>Trick:</strong> Treat the 2D matrix as a flat sorted 1D array. Index i maps to matrix[i//n][i%n]. Binary search on 0..m*n-1. O(log(m×n)).</div></div>
+    </div>
+
+    <div class="q-card" onclick="toggleQ(this)">
+      <div class="q-header"><span class="q-title">Koko Eating Bananas (LeetCode 875)</span><span class="q-difficulty medium">Medium</span></div>
+      <div class="q-body"><p class="q-desc">Find minimum eating speed k to finish all piles in h hours.</p><div class="q-approach"><strong>Answer-space BS:</strong> lo=1, hi=max(piles). For each mid (speed), check if total ceil(p/k) hours ≤ h. If yes, try slower (hi=mid). If no, go faster (lo=mid+1). O(n log m).</div></div>
+    </div>
+
+    <div class="q-card" onclick="toggleQ(this)">
+      <div class="q-header"><span class="q-title">Median of Two Sorted Arrays (LeetCode 4)</span><span class="q-difficulty hard">Hard</span></div>
+      <div class="q-body"><p class="q-desc">Find the median of two sorted arrays in O(log(m+n)).</p><div class="q-approach"><strong>Binary search on partition:</strong> Binary search on the shorter array's partition point. Ensure left halves of both arrays together have (m+n)//2 elements. Check that maxLeft ≤ minRight across both arrays. Adjust partition until condition satisfied.</div></div>
+    </div>
+
+    <div class="q-card" onclick="toggleQ(this)">
+      <div class="q-header"><span class="q-title">Time Based Key-Value Store (LeetCode 981)</span><span class="q-difficulty medium">Medium</span></div>
+      <div class="q-body"><p class="q-desc">Design a key-value store that retrieves values at or before a given timestamp.</p><div class="q-approach"><strong>BS on timestamps:</strong> Store (timestamp, value) list per key. On get, binary search for largest timestamp ≤ given timestamp using bisect_right. O(log n) per query.</div></div>
+    </div>
+
+    <div class="q-card" onclick="toggleQ(this)">
+      <div class="q-header"><span class="q-title">Split Array Largest Sum (LeetCode 410)</span><span class="q-difficulty hard">Hard</span></div>
+      <div class="q-body"><p class="q-desc">Split array into m subarrays minimising the largest subarray sum.</p><div class="q-approach"><strong>Answer-space BS:</strong> lo=max(nums), hi=sum(nums). For each mid (capacity), greedily count partitions needed. If count ≤ m: hi=mid (feasible). Else: lo=mid+1. O(n log(sum)).</div></div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ======================= HELPERS =======================
+function renderArr(containerId, arr, states = {}) {
+  const row = document.getElementById(containerId);
+  row.innerHTML = arr.map((v, i) => {
+    const s = states[i] || 'normal';
+    let cls = 'arr-cell';
+    if (s === 'mid')       cls += ' mid';
+    else if (s === 'found') cls += ' found';
+    else if (s === 'elim')  cls += ' eliminated';
+    else if (s === 'pivot') cls += ' pivot';
+    else if (s === 'lo')    cls += ' lo';
+    else if (s === 'hi')    cls += ' hi';
+    else if (s === 'inrange') cls += ' in-range';
+
+    const ptrs = [];
+    if (states['_lo'] === i) ptrs.push({ label: 'lo',  cls: 'ptr-lo'  });
+    if (states['_hi'] === i) ptrs.push({ label: 'hi',  cls: 'ptr-hi'  });
+    if (states['_mid'] === i) ptrs.push({ label: 'mid', cls: 'ptr-mid' });
+
+    const ptrHtml = ptrs.map(p => `<span class="ptr-label ${p.cls}">${p.label}</span>`).join('');
+    return `<div class="${cls}">${ptrHtml}${v}<div class="cell-idx">${i}</div></div>`;
+  }).join('');
+}
+
+// ======================= CLASSIC =======================
+const CLS_ARR = [2, 5, 8, 12, 16, 23, 38, 45, 57, 72, 91];
+let clsSteps = [], clsIdx = 0, clsTimer = null, clsTarget = 23;
+
+function buildClassicSteps(arr, target) {
+  const steps = [];
+  let lo = 0, hi = arr.length - 1;
+  const elim = new Set();
+
+  while (lo <= hi) {
+    const mid = lo + Math.floor((hi - lo) / 2);
+    const states = { _lo: lo, _hi: hi, _mid: mid };
+    for (let i = 0; i < arr.length; i++) {
+      if (elim.has(i)) states[i] = 'elim';
+    }
+    states[mid] = 'mid';
+
+    if (arr[mid] === target) {
+      const s2 = { ...states }; s2[mid] = 'found';
+      steps.push({ states: s2, msg: `arr[${mid}]=${arr[mid]} == target! Found at index ${mid} ✓` });
+      return steps;
+    } else if (arr[mid] < target) {
+      steps.push({ states: { ...states }, msg: `arr[${mid}]=${arr[mid]} < ${target} → search right half [${mid+1}..${hi}]` });
+      for (let i = 0; i <= mid; i++) elim.add(i);
+      lo = mid + 1;
+    } else {
+      steps.push({ states: { ...states }, msg: `arr[${mid}]=${arr[mid]} > ${target} → search left half [${lo}..${mid-1}]` });
+      for (let i = mid; i < arr.length; i++) elim.add(i);
+      hi = mid - 1;
+    }
+  }
+  steps.push({ states: {}, msg: `Target ${target} not found in array.` });
+  return steps;
+}
+
+function classicLoad() {
+  clsTarget = parseInt(document.getElementById('classic-target').value) || 23;
+  classicReset();
+}
+function classicReset() {
+  clearInterval(clsTimer); clsIdx = 0;
+  clsSteps = buildClassicSteps(CLS_ARR, clsTarget);
+  const init = {}; CLS_ARR.forEach((_,i) => init[i] = 'normal');
+  init['_lo'] = 0; init['_hi'] = CLS_ARR.length - 1;
+  renderArr('classic-arr', CLS_ARR, init);
+  document.getElementById('classic-status').textContent = `Searching for ${clsTarget}. Press Play or Step.`;
+}
+function classicStep() {
+  if (clsIdx >= clsSteps.length) return;
+  const s = clsSteps[clsIdx++];
+  renderArr('classic-arr', CLS_ARR, s.states);
+  document.getElementById('classic-status').textContent = s.msg;
+}
+function classicPlay() {
+  clearInterval(clsTimer);
+  clsTimer = setInterval(() => { classicStep(); if (clsIdx >= clsSteps.length) clearInterval(clsTimer); }, 900);
+}
+classicReset();
+
+// ======================= FIRST & LAST =======================
+const FL_ARR = [1, 3, 5, 7, 7, 7, 7, 9, 11, 13];
+let flSteps = [], flIdx = 0, flTimer = null, flTarget = 7;
+let flFirstResult = -1, flLastResult = -1;
+
+function buildFLSteps(arr, target) {
+  const steps = [];
+
+  function searchSteps(findFirst) {
+    let lo = 0, hi = arr.length - 1, result = -1;
+    const label = findFirst ? 'FIRST' : 'LAST';
+    steps.push({ states: { _lo: lo, _hi: hi }, which: label, first: flFirstResult, last: flLastResult, msg: `Searching for ${label} occurrence of ${target}` });
+    while (lo <= hi) {
+      const mid = lo + Math.floor((hi - lo) / 2);
+      const states = { _lo: lo, _hi: hi, _mid: mid };
+      if (arr[mid] === target) {
+        result = mid;
+        if (findFirst) flFirstResult = result; else flLastResult = result;
+        const s = { ...states }; s[mid] = 'found';
+        steps.push({ states: s, which: label, first: flFirstResult, last: flLastResult, msg: `arr[${mid}]==${target}! Record index ${mid}. Keep searching ${findFirst ? 'left' : 'right'} for ${label}.` });
+        if (findFirst) hi = mid - 1; else lo = mid + 1;
+      } else if (arr[mid] < target) {
+        steps.push({ states: { ...states }, which: label, first: flFirstResult, last: flLastResult, msg: `arr[${mid}]=${arr[mid]} < ${target} → go right` });
+        lo = mid + 1;
+      } else {
+        steps.push({ states: { ...states }, which: label, first: flFirstResult, last: flLastResult, msg: `arr[${mid}]=${arr[mid]} > ${target} → go left` });
+        hi = mid - 1;
+      }
+    }
+  }
+
+  flFirstResult = -1; flLastResult = -1;
+  searchSteps(true);
+  searchSteps(false);
+  steps.push({ states: {}, which: 'DONE', first: flFirstResult, last: flLastResult, msg: `Done! First=${flFirstResult}, Last=${flLastResult}` });
+  return steps;
+}
+
+function flLoad() { flTarget = parseInt(document.getElementById('fl-target').value) || 7; flReset(); }
+function flReset() {
+  clearInterval(flTimer); flIdx = 0; flFirstResult = -1; flLastResult = -1;
+  flSteps = buildFLSteps(FL_ARR, flTarget);
+  renderArr('fl-arr', FL_ARR, { _lo: 0, _hi: FL_ARR.length - 1 });
+  document.getElementById('fl-which').textContent = '—';
+  document.getElementById('fl-first').textContent = '—';
+  document.getElementById('fl-last').textContent = '—';
+  document.getElementById('fl-status').textContent = `Searching for ${flTarget}. Press Play or Step.`;
+}
+function flStep() {
+  if (flIdx >= flSteps.length) return;
+  const s = flSteps[flIdx++];
+  renderArr('fl-arr', FL_ARR, s.states);
+  document.getElementById('fl-which').textContent = s.which;
+  document.getElementById('fl-first').textContent = s.first === -1 ? '—' : s.first;
+  document.getElementById('fl-last').textContent = s.last === -1 ? '—' : s.last;
+  document.getElementById('fl-status').textContent = s.msg;
+}
+function flPlay() {
+  clearInterval(flTimer);
+  flTimer = setInterval(() => { flStep(); if (flIdx >= flSteps.length) clearInterval(flTimer); }, 850);
+}
+flReset();
+
+// ======================= ROTATED =======================
+const ROT_ARR = [4, 5, 6, 7, 0, 1, 2, 3];
+let rotSteps = [], rotIdx = 0, rotTimer = null, rotTarget = 6;
+
+function buildRotSteps(arr, target) {
+  const steps = [];
+  let lo = 0, hi = arr.length - 1;
+
+  while (lo <= hi) {
+    const mid = lo + Math.floor((hi - lo) / 2);
+    const states = { _lo: lo, _hi: hi, _mid: mid, [mid]: 'mid' };
+
+    if (arr[mid] === target) {
+      states[mid] = 'found';
+      steps.push({ states, msg: `arr[${mid}]=${arr[mid]} == ${target}! Found at index ${mid} ✓` });
+      return steps;
+    }
+
+    if (arr[lo] <= arr[mid]) {
+      // left half sorted
+      if (arr[lo] <= target && target < arr[mid]) {
+        steps.push({ states, msg: `Left [${lo}..${mid}] is sorted. ${target} in range [${arr[lo]}..${arr[mid]}] → search left` });
+        hi = mid - 1;
+      } else {
+        steps.push({ states, msg: `Left [${lo}..${mid}] is sorted. ${target} NOT in [${arr[lo]}..${arr[mid]}] → search right` });
+        lo = mid + 1;
+      }
+    } else {
+      // right half sorted
+      if (arr[mid] < target && target <= arr[hi]) {
+        steps.push({ states, msg: `Right [${mid}..${hi}] is sorted. ${target} in range [${arr[mid]}..${arr[hi]}] → search right` });
+        lo = mid + 1;
+      } else {
+        steps.push({ states, msg: `Right [${mid}..${hi}] is sorted. ${target} NOT in [${arr[mid]}..${arr[hi]}] → search left` });
+        hi = mid - 1;
+      }
+    }
+  }
+  steps.push({ states: {}, msg: `Target ${target} not found.` });
+  return steps;
+}
+
+function rotLoad() { rotTarget = parseInt(document.getElementById('rot-target').value) || 6; rotReset(); }
+function rotReset() {
+  clearInterval(rotTimer); rotIdx = 0;
+  rotSteps = buildRotSteps(ROT_ARR, rotTarget);
+  renderArr('rot-arr', ROT_ARR, { _lo: 0, _hi: ROT_ARR.length - 1 });
+  document.getElementById('rot-status').textContent = `Searching for ${rotTarget} in rotated array. Press Play.`;
+}
+function rotStep() {
+  if (rotIdx >= rotSteps.length) return;
+  const s = rotSteps[rotIdx++];
+  renderArr('rot-arr', ROT_ARR, s.states);
+  document.getElementById('rot-status').textContent = s.msg;
+}
+function rotPlay() {
+  clearInterval(rotTimer);
+  rotTimer = setInterval(() => { rotStep(); if (rotIdx >= rotSteps.length) clearInterval(rotTimer); }, 950);
+}
+rotReset();
+
+// ======================= ANSWER SPACE =======================
+const ANS_PILES = [3, 6, 7, 11], ANS_H = 8;
+const ANS_MAX = Math.max(...ANS_PILES);
+let ansSteps = [], ansIdx = 0, ansTimer = null;
+
+function canFinish(piles, h, k) {
+  return piles.reduce((acc, p) => acc + Math.ceil(p / k), 0) <= h;
+}
+
+function buildAnsSteps() {
+  const steps = [];
+  let lo = 1, hi = ANS_MAX;
+
+  // pre-compute feasibility for all speeds
+  const feasible = Array.from({ length: ANS_MAX + 1 }, (_, k) => k === 0 ? false : canFinish(ANS_PILES, ANS_H, k));
+
+  steps.push({ lo, hi, mid: null, msg: `lo=1 (min speed), hi=${ANS_MAX} (max pile). Binary search begins.` });
+
+  while (lo < hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    const ok = feasible[mid];
+    steps.push({ lo, hi, mid, msg: `mid=${mid}, hours needed=${ANS_PILES.map(p => Math.ceil(p / mid)).join('+')}=${ANS_PILES.reduce((a, p) => a + Math.ceil(p / mid), 0)} ${ok ? `≤ ${ANS_H} ✓ feasible → hi=mid` : `> ${ANS_H} ✗ too slow → lo=mid+1`}` });
+    if (ok) hi = mid; else lo = mid + 1;
+  }
+  steps.push({ lo, hi, mid: lo, ans: lo, msg: `lo==hi==${lo}. Minimum speed = ${lo} 🎉` });
+  return { steps, feasible };
+}
+
+function renderAnsBars(lo, hi, mid) {
+  const container = document.getElementById('ans-bars');
+  const speeds = Array.from({ length: ANS_MAX }, (_, i) => i + 1);
+  container.innerHTML = speeds.map(k => {
+    const ok = canFinish(ANS_PILES, ANS_H, k);
+    let cls = ok ? 'feasible' : 'infeasible';
+    if (k === mid) cls += ' mid-bar';
+    const h = 20 + k * 8;
+    return `<div class="ans-bar ${cls}" style="height:${h}px"><span>${k}</span></div>`;
+  }).join('');
+}
+
+let ansFeasible = [];
+function ansReset() {
+  clearInterval(ansTimer); ansIdx = 0;
+  const built = buildAnsSteps(); ansSteps = built.steps; ansFeasible = built.feasible;
+  renderAnsBars(1, ANS_MAX, null);
+  document.getElementById('ans-lo').textContent = '1';
+  document.getElementById('ans-hi').textContent = ANS_MAX;
+  document.getElementById('ans-mid').textContent = '—';
+  document.getElementById('ans-result').textContent = '—';
+  document.getElementById('ans-status').textContent = 'Press Play to binary-search the answer space';
+}
+function ansStep() {
+  if (ansIdx >= ansSteps.length) return;
+  const s = ansSteps[ansIdx++];
+  renderAnsBars(s.lo, s.hi, s.mid);
+  document.getElementById('ans-lo').textContent = s.lo;
+  document.getElementById('ans-hi').textContent = s.hi;
+  document.getElementById('ans-mid').textContent = s.mid ?? '—';
+  document.getElementById('ans-result').textContent = s.ans ?? '—';
+  document.getElementById('ans-status').textContent = s.msg;
+}
+function ansPlay() {
+  clearInterval(ansTimer);
+  ansTimer = setInterval(() => { ansStep(); if (ansIdx >= ansSteps.length) clearInterval(ansTimer); }, 1000);
+}
+ansReset();
+
+// ======================= SHARED =======================
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+function toggleQ(card) { card.querySelector('.q-body').classList.toggle('open'); }
+</script>
+</body>
+</html>

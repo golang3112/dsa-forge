@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linked Lists — DSA Forge</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:rgba(255,255,255,0.08);--border-bright:rgba(255,255,255,0.18);--accent:#a855f7;--accent2:#00f5a0;--accent3:#f59e0b;--text:#f0f0f8;--muted:#6b7280;--danger:#ef4444;--info:#38bdf8;--mono:'Space Mono',monospace;--display:'Syne',sans-serif;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--display);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(168,85,247,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(168,85,247,0.025) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.container{max-width:1100px;margin:0 auto;padding:0 2rem;position:relative;z-index:1;}
+nav{border-bottom:1px solid var(--border);padding:1.2rem 0;background:rgba(10,10,15,0.92);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;}
+.logo{font-family:var(--mono);font-size:1.1rem;color:#00f5a0;text-decoration:none;}
+.logo span{color:var(--text);}
+.nav-links{display:flex;gap:1.5rem;list-style:none;}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:0.82rem;transition:color 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:#00f5a0;}
+.page-hero{padding:4rem 0 2rem;}
+.breadcrumb{font-family:var(--mono);font-size:0.75rem;color:var(--muted);margin-bottom:1rem;}
+.breadcrumb a{color:var(--muted);text-decoration:none;}
+.page-title{font-size:clamp(2.5rem,5vw,4rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:1rem;}
+.page-title span{color:var(--accent);}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin:1.5rem 0 0;overflow-x:auto;}
+.tab-btn{font-family:var(--mono);font-size:0.78rem;padding:0.75rem 1.2rem;background:transparent;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color 0.2s,border-color 0.2s;}
+.tab-btn:hover{color:var(--text);}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-content{display:none;padding:2.5rem 0;}
+.tab-content.active{display:block;}
+.pattern-tag{display:inline-block;font-family:var(--mono);font-size:0.7rem;color:var(--accent);border:1px solid rgba(168,85,247,0.3);padding:3px 10px;border-radius:999px;margin-bottom:0.75rem;}
+.pattern-name{font-size:1.8rem;font-weight:700;margin-bottom:0.75rem;}
+.pattern-desc{color:var(--muted);line-height:1.8;max-width:700px;font-size:0.95rem;margin-bottom:1.5rem;}
+.viz-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;}
+.viz-title{font-family:var(--mono);font-size:0.72rem;color:var(--muted);margin-bottom:1.25rem;letter-spacing:0.06em;}
+.controls{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:1rem;}
+.ctrl-btn{font-family:var(--mono);font-size:0.72rem;padding:6px 14px;border-radius:7px;border:1px solid var(--border-bright);background:var(--surface2);color:var(--text);cursor:pointer;transition:all 0.15s;}
+.ctrl-btn:hover{border-color:var(--accent);color:var(--accent);}
+.ctrl-btn.primary{background:var(--accent);color:white;border-color:var(--accent);font-weight:700;}
+.ctrl-btn.primary:hover{opacity:0.85;}
+.status-line{font-family:var(--mono);font-size:0.75rem;color:var(--accent);min-height:1.4rem;margin-top:0.75rem;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem;}
+@media(max-width:700px){.two-col{grid-template-columns:1fr;}}
+.code-block{background:#0d1117;border:1px solid var(--border);border-radius:10px;padding:1.25rem;overflow-x:auto;font-family:var(--mono);font-size:0.76rem;line-height:1.8;color:#e6edf3;}
+.code-block .kw{color:#ff7b72;}.code-block .fn{color:#d2a8ff;}.code-block .cm{color:#8b949e;font-style:italic;}.code-block .num{color:#79c0ff;}
+.info-box{background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:1rem 1.25rem;margin:1rem 0;}
+.info-box p{font-size:0.84rem;color:var(--muted);line-height:1.7;}
+.info-box strong{color:var(--accent);}
+.q-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;cursor:pointer;transition:border-color 0.2s;margin-bottom:0.75rem;}
+.q-card:hover{border-color:var(--border-bright);}
+.q-header{display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+.q-title{font-weight:600;font-size:0.9rem;}
+.q-difficulty{font-family:var(--mono);font-size:0.7rem;padding:2px 8px;border-radius:999px;}
+.easy{color:#00f5a0;border:1px solid rgba(0,245,160,0.3);}
+.medium{color:var(--accent3);border:1px solid rgba(245,158,11,0.3);}
+.hard{color:var(--danger);border:1px solid rgba(239,68,68,0.3);}
+.q-body{display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);}
+.q-body.open{display:block;}
+.q-desc{color:var(--muted);font-size:0.84rem;line-height:1.7;margin-bottom:0.75rem;}
+.q-approach{font-size:0.82rem;line-height:1.7;}
+.q-approach strong{color:var(--accent);}
+
+/* Linked list node */
+.ll-canvas{width:100%;overflow-x:auto;}
+svg.ll-svg{min-width:500px;display:block;}
+.ll-node-rect{rx:8;fill:var(--surface2);stroke:rgba(255,255,255,0.2);stroke-width:1.5;transition:all 0.3s;}
+.ll-node-rect.current{fill:rgba(168,85,247,0.35);stroke:#a855f7;stroke-width:2.5;}
+.ll-node-rect.prev{fill:rgba(0,245,160,0.15);stroke:#00f5a0;stroke-width:2;}
+.ll-node-rect.slow{fill:rgba(56,189,248,0.25);stroke:#38bdf8;stroke-width:2;}
+.ll-node-rect.fast{fill:rgba(245,158,11,0.25);stroke:#f59e0b;stroke-width:2;}
+.ll-node-rect.cycle{fill:rgba(239,68,68,0.2);stroke:#ef4444;stroke-width:2;}
+.ll-node-rect.merged{fill:rgba(0,245,160,0.15);stroke:#00f5a0;stroke-width:2;}
+.ll-label{fill:var(--text);font-family:'Space Mono',monospace;font-size:13px;font-weight:700;text-anchor:middle;dominant-baseline:central;}
+.ll-ptr{font-family:'Space Mono',monospace;font-size:10px;text-anchor:middle;}
+</style>
+</head>
+<body>
+<nav>
+  <div class="container nav-inner">
+    <a href="index.html" class="logo">DSA<span>Forge</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="arrays.html">Arrays</a></li>
+      <li><a href="trees.html">Trees</a></li>
+      <li><a href="graphs.html">Graphs</a></li>
+      <li><a href="dp.html">DP</a></li>
+      <li><a href="linkedlist.html" class="active">Linked List</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-hero">
+    <div class="breadcrumb"><a href="index.html">Home</a> / Linked Lists</div>
+    <h1 class="page-title">Linked <span>Lists</span></h1>
+    <p style="color:var(--muted);line-height:1.7;max-width:600px">Reversal, Floyd's cycle detection, finding the middle, and merging sorted lists — all animated pointer-by-pointer.</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('reversal',this)">Reversal</button>
+    <button class="tab-btn" onclick="switchTab('floyd',this)">Floyd's Cycle</button>
+    <button class="tab-btn" onclick="switchTab('middle',this)">Find Middle</button>
+    <button class="tab-btn" onclick="switchTab('merge',this)">Merge Sorted</button>
+    <button class="tab-btn" onclick="switchTab('questions',this)">Questions</button>
+  </div>
+
+  <!-- REVERSAL -->
+  <div id="tab-reversal" class="tab-content active">
+    <div class="pattern-tag">PATTERN — REVERSAL</div>
+    <div class="pattern-name">Reverse a Linked List</div>
+    <p class="pattern-desc">Iteratively reverse a singly linked list using three pointers: prev, curr, and next. Each step detaches curr from the original chain and points it backward.</p>
+    <div class="viz-box">
+      <div class="viz-title">// REVERSAL — watch prev (green) and curr (purple) advance</div>
+      <div class="ll-canvas"><svg class="ll-svg" id="rev-svg" viewBox="0 0 640 160" height="160"></svg></div>
+      <div class="status-line" id="rev-status">Press Play to begin reversal</div>
+      <div class="controls">
+        <button class="ctrl-btn primary" onclick="revPlay()">▶ Play</button>
+        <button class="ctrl-btn" onclick="revStep()">Step →</button>
+        <button class="ctrl-btn" onclick="revReset()">↺ Reset</button>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="code-block">
+<span class="cm"># Iterative reversal — O(n) time, O(1) space</span>
+<span class="kw">def</span> <span class="fn">reverse_list</span>(head):
+  prev = <span class="kw">None</span>
+  curr = head
+
+  <span class="kw">while</span> curr:
+    next_node = curr.next  <span class="cm"># save next</span>
+    curr.next = prev       <span class="cm"># reverse link</span>
+    prev = curr            <span class="cm"># advance prev</span>
+    curr = next_node       <span class="cm"># advance curr</span>
+
+  <span class="kw">return</span> prev  <span class="cm"># new head</span>
+
+<span class="cm"># Recursive version</span>
+<span class="kw">def</span> <span class="fn">reverse_recursive</span>(head):
+  <span class="kw">if not</span> head <span class="kw">or not</span> head.next:
+    <span class="kw">return</span> head
+  new_head = reverse_recursive(head.next)
+  head.next.next = head
+  head.next = <span class="kw">None</span>
+  <span class="kw">return</span> new_head</div>
+      <div class="code-block">
+<span class="cm"># REVERSE between positions m and n (LC 92)</span>
+<span class="kw">def</span> <span class="fn">reverse_between</span>(head, m, n):
+  dummy = ListNode(<span class="num">0</span>)
+  dummy.next = head
+  prev = dummy
+
+  <span class="cm"># Move prev to position m-1</span>
+  <span class="kw">for</span> _ <span class="kw">in</span> range(m - <span class="num">1</span>):
+    prev = prev.next
+
+  curr = prev.next
+  <span class="kw">for</span> _ <span class="kw">in</span> range(n - m):
+    next_n = curr.next
+    curr.next = next_n.next
+    next_n.next = prev.next
+    prev.next = next_n
+
+  <span class="kw">return</span> dummy.next
+
+<span class="cm"># KEY: dummy node simplifies
+# edge cases (reversing from head)</span></div>
+    </div>
+  </div>
+
+  <!-- FLOYD'S CYCLE -->
+  <div id="tab-floyd" class="tab-content">
+    <div class="pattern-tag">PATTERN — FLOYD'S CYCLE DETECTION</div>
+    <div class="pattern-name">Floyd's Tortoise & Hare</div>
+    <p class="pattern-desc">Two pointers: slow moves 1 step, fast moves 2 steps. If there's a cycle, they'll meet inside it. If no cycle, fast reaches null. Uses O(1) space — no hash set needed.</p>
+    <div class="info-box"><p><strong>Why they meet:</strong> Once inside a cycle, fast gains 1 step per iteration on slow. The gap closes to 0 — they must meet. The meeting point can locate the cycle start with a clever math trick.</p></div>
+    <div class="viz-box">
+      <div class="viz-title">// FLOYD'S — slow (blue) and fast (yellow) pointers</div>
+      <div class="ll-canvas"><svg class="ll-svg" id="floyd-svg" viewBox="0 0 680 200" height="200"></svg></div>
+      <div class="status-line" id="floyd-status">Press Play</div>
+      <div class="controls">
+        <button class="ctrl-btn primary" onclick="floydPlay()">▶ Play</button>
+        <button class="ctrl-btn" onclick="floydStep()">Step →</button>
+        <button class="ctrl-btn" onclick="floydReset()">↺ Reset</button>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="code-block">
+<span class="cm"># Detect cycle — O(n) time, O(1) space</span>
+<span class="kw">def</span> <span class="fn">has_cycle</span>(head):
+  slow = fast = head
+  <span class="kw">while</span> fast <span class="kw">and</span> fast.next:
+    slow = slow.next
+    fast = fast.next.next
+    <span class="kw">if</span> slow == fast:
+      <span class="kw">return True</span>
+  <span class="kw">return False</span>
+
+<span class="cm"># Find cycle start node (LC 142)</span>
+<span class="kw">def</span> <span class="fn">cycle_start</span>(head):
+  slow = fast = head
+  <span class="cm"># Phase 1: find meeting point</span>
+  <span class="kw">while</span> fast <span class="kw">and</span> fast.next:
+    slow = slow.next
+    fast = fast.next.next
+    <span class="kw">if</span> slow == fast: <span class="kw">break</span>
+  <span class="kw">else</span>: <span class="kw">return None</span>  <span class="cm"># no cycle</span>
+  <span class="cm"># Phase 2: move one pointer to head</span>
+  slow = head
+  <span class="kw">while</span> slow != fast:
+    slow = slow.next
+    fast = fast.next
+  <span class="kw">return</span> slow  <span class="cm"># cycle start!</span></div>
+      <div class="code-block">
+<span class="cm"># WHY PHASE 2 WORKS (math):
+# Let:
+#   F = distance head → cycle start
+#   C = cycle length
+#   h = distance start → meeting point
+#
+# At meeting: slow travelled F+h
+#             fast travelled F+h+C
+#             fast = 2×slow
+#   → F+h+C = 2(F+h)
+#   → C-h = F
+#   → F = C-h
+#
+# So moving one pointer to head and
+# advancing both 1-step will meet
+# at the CYCLE START after F steps.</span></div>
+    </div>
+  </div>
+
+  <!-- FIND MIDDLE -->
+  <div id="tab-middle" class="tab-content">
+    <div class="pattern-tag">PATTERN — TWO POINTERS</div>
+    <div class="pattern-name">Find the Middle Node</div>
+    <p class="pattern-desc">Use slow/fast pointers: slow moves 1 step, fast moves 2. When fast reaches the end, slow is at the middle. One-pass O(n), O(1) space — no need to count length first.</p>
+    <div class="viz-box">
+      <div class="viz-title">// FIND MIDDLE — slow (blue) and fast (yellow)</div>
+      <div class="ll-canvas"><svg class="ll-svg" id="mid-svg" viewBox="0 0 680 130" height="130"></svg></div>
+      <div class="status-line" id="mid-status">Press Play</div>
+      <div class="controls">
+        <button class="ctrl-btn primary" onclick="midPlay()">▶ Play</button>
+        <button class="ctrl-btn" onclick="midStep()">Step →</button>
+        <button class="ctrl-btn" onclick="midReset()">↺ Reset</button>
+      </div>
+    </div>
+    <div class="code-block">
+<span class="kw">def</span> <span class="fn">find_middle</span>(head):
+  slow = fast = head
+  <span class="kw">while</span> fast <span class="kw">and</span> fast.next:
+    slow = slow.next        <span class="cm"># 1 step</span>
+    fast = fast.next.next   <span class="cm"># 2 steps</span>
+  <span class="kw">return</span> slow  <span class="cm"># middle node</span>
+
+<span class="cm"># For even-length list, returns SECOND middle.
+# To get first middle: while fast.next and fast.next.next
+# Applications:
+# - Reverse second half (palindrome check)
+# - Merge sort on linked list
+# - Find if palindrome: find mid → reverse → compare</span>
+    </div>
+  </div>
+
+  <!-- MERGE SORTED -->
+  <div id="tab-merge" class="tab-content">
+    <div class="pattern-tag">PATTERN — MERGE</div>
+    <div class="pattern-name">Merge Two Sorted Lists</div>
+    <p class="pattern-desc">Compare front nodes of two sorted lists, attach the smaller to result, advance that pointer. Use a dummy head to avoid edge cases. Foundation of merge sort on linked lists.</p>
+    <div class="viz-box">
+      <div class="viz-title">// MERGE — list1 (blue) and list2 (yellow) merge into result (green)</div>
+      <div class="ll-canvas"><svg class="ll-svg" id="merge-svg" viewBox="0 0 680 230" height="230"></svg></div>
+      <div class="status-line" id="merge-status">Press Play</div>
+      <div class="controls">
+        <button class="ctrl-btn primary" onclick="mergePlay()">▶ Play</button>
+        <button class="ctrl-btn" onclick="mergeStep()">Step →</button>
+        <button class="ctrl-btn" onclick="mergeReset()">↺ Reset</button>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="code-block">
+<span class="cm"># Merge two sorted lists — O(n+m)</span>
+<span class="kw">def</span> <span class="fn">merge_sorted</span>(l1, l2):
+  dummy = ListNode(<span class="num">0</span>)  <span class="cm"># sentinel head</span>
+  curr = dummy
+
+  <span class="kw">while</span> l1 <span class="kw">and</span> l2:
+    <span class="kw">if</span> l1.val <= l2.val:
+      curr.next = l1
+      l1 = l1.next
+    <span class="kw">else</span>:
+      curr.next = l2
+      l2 = l2.next
+    curr = curr.next
+
+  <span class="cm"># Attach remaining nodes</span>
+  curr.next = l1 <span class="kw">if</span> l1 <span class="kw">else</span> l2
+  <span class="kw">return</span> dummy.next</div>
+      <div class="code-block">
+<span class="cm"># MERGE K SORTED LISTS (LC 23)</span>
+<span class="kw">import</span> heapq
+
+<span class="kw">def</span> <span class="fn">merge_k_lists</span>(lists):
+  heap = []
+  <span class="cm"># Push first node of each list</span>
+  <span class="kw">for</span> i, node <span class="kw">in</span> enumerate(lists):
+    <span class="kw">if</span> node:
+      heapq.heappush(heap, (node.val, i, node))
+
+  dummy = curr = ListNode(<span class="num">0</span>)
+  <span class="kw">while</span> heap:
+    val, i, node = heapq.heappop(heap)
+    curr.next = node
+    curr = curr.next
+    <span class="kw">if</span> node.next:
+      heapq.heappush(heap, (node.next.val, i, node.next))
+
+  <span class="kw">return</span> dummy.next
+<span class="cm"># Time: O(N log k) — N total nodes, k lists</span></div>
+    </div>
+  </div>
+
+  <!-- QUESTIONS -->
+  <div id="tab-questions" class="tab-content">
+    <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:1.5rem;">Famous Linked List Questions</h2>
+    <div class="q-card" onclick="toggleQ(this)">
+      <div class="q-header"><span class="q-title">Reverse Linked List (LeetCode 206)</span><span class="q-difficulty easy">Easy</span></div>
+      <div class="q-body"><p class="q-desc">Reverse a singly linked list.</p><div class="q-approach"><strong>Iterative:</strong> prev=None, curr=head. Save next, reverse link, advance both. Return prev.<br><strong>Recursive:</strong> Recurse to end, reverse links on the way back up. O(n) time, O(n) stack space.</div></div>
+    </div>
+    <div class="q-card" onclick="toggleQ(this)">
+      <div class="q-header"><span class="q-title">Linked List Cycle II (LeetCode 142)</span><span class="q-difficulty medium">Medium</span></div>
+      <div class="q-body"><p class="q-desc">Find the node where the cycle begins.</p><div class="q-approach"><strong>Floyd's two-phase:</strong> Phase 1 finds meeting point inside cycle. Phase 2 moves one pointer to head, advance both by 1 until they meet — that's the cycle start (proof via math: F = C-h).</div></div>
+    </div>
+    <div class="q-card" onclick="toggleQ(this)">
+      <div class="q-header"><span class="q-title">Palindrome Linked List (LeetCode 234)</span><span class="q-difficulty easy">Easy</span></div>
+      <div class="q-body"><p class="q-desc">Check if a linked list is a palindrome in O(n) time and O(1) space.</p><div class="q-approach"><strong>3-step:</strong> (1) Find middle with slow/fast. (2) Reverse second half in place. (3) Compare first and reversed second half. Optionally restore the list afterward.</div></div>
+    </div>
+    <div class="q-card" onclick="toggleQ(this)">
+      <div class="q-header"><span class="q-title">Reorder List (LeetCode 143)</span><span class="q-difficulty medium">Medium</span></div>
+      <div class="q-body"><p class="q-desc">Reorder L0→L1→…→Ln to L0→Ln→L1→Ln-1→L2→…</p><div class="q-approach"><strong>3-step:</strong> (1) Find middle. (2) Reverse second half. (3) Merge two halves by alternating nodes. Each step is O(n), O(1) space — three linked list fundamentals combined.</div></div>
+    </div>
+    <div class="q-card" onclick="toggleQ(this)">
+      <div class="q-header"><span class="q-title">LRU Cache (LeetCode 146)</span><span class="q-difficulty medium">Medium</span></div>
+      <div class="q-body"><p class="q-desc">Design a data structure that follows Least Recently Used cache policy.</p><div class="q-approach"><strong>Doubly linked list + hash map.</strong> Map gives O(1) access. DLL gives O(1) move-to-front and evict-tail. Most recently used at head, least recently used at tail. Classic system design + DS combo.</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== HELPERS ====================
+function makeSVGNode(svg, x, y, val, cls='', label='') {
+  const W=56, H=38;
+  svg.innerHTML += `<rect class="ll-node-rect ${cls}" x="${x-W/2}" y="${y-H/2}" width="${W}" height="${H}"/>`;
+  svg.innerHTML += `<text class="ll-label" x="${x}" y="${y}">${val}</text>`;
+  if(label) svg.innerHTML += `<text class="ll-ptr" x="${x}" y="${y+H/2+14}" fill="#a855f7">${label}</text>`;
+}
+function makeArrow(svg, x1, y1, x2, y2, color='rgba(255,255,255,0.25)') {
+  const dx=x2-x1, dy=y2-y1, len=Math.sqrt(dx*dx+dy*dy);
+  const ux=dx/len, uy=dy/len, ar=10;
+  const ex=x2-ux*28, ey=y2-uy*19;
+  svg.innerHTML += `<line x1="${x1+28}" y1="${y1}" x2="${ex}" y2="${ey}" stroke="${color}" stroke-width="2"/>`;
+  svg.innerHTML += `<polygon points="${ex+ux*ar-uy*5},${ey+uy*ar+ux*5} ${ex+ux*ar+uy*5},${ey+uy*ar-ux*5} ${ex},${ey}" fill="${color}"/>`;
+}
+
+// ==================== REVERSAL ====================
+const REV_VALS = [1,2,3,4,5];
+let revSteps=[], revIdx=0, revTimer=null;
+
+function buildRevSteps() {
+  const steps = [];
+  let prev=null, curr=0;
+  const reversed = [];
+  steps.push({prev:null,curr:0,reversed:[...reversed],msg:'Start: prev=null, curr=head(1)'});
+  while(curr < REV_VALS.length) {
+    reversed.unshift(REV_VALS[curr]);
+    const oldCurr=curr;
+    prev=curr; curr++;
+    steps.push({prev,curr:curr<REV_VALS.length?curr:null,reversed:[...reversed],msg:`curr(${REV_VALS[oldCurr]}).next = prev(${prev===null?'null':REV_VALS[prev-1]||'null'}). Advance pointers.`});
+  }
+  steps.push({prev:REV_VALS.length-1,curr:null,reversed:[...reversed],msg:`Done! New head = ${REV_VALS[REV_VALS.length-1]}`});
+  return steps;
+}
+
+function drawRevStep(step) {
+  const svg = document.getElementById('rev-svg');
+  const W=640, NW=56, spacing=80, startX=50, y=80;
+  svg.innerHTML='';
+  // Original chain label
+  svg.innerHTML+=`<text x="20" y="25" fill="#6b7280" font-family="Space Mono" font-size="11">Original →</text>`;
+  REV_VALS.forEach((v,i)=>{
+    const x=startX+i*spacing;
+    let cls='';
+    if(step.curr!==null && i===step.curr) cls='current';
+    else if(step.prev!==null && i===step.prev) cls='prev';
+    const label=step.curr!==null&&i===step.curr?'curr':step.prev!==null&&i===step.prev?'prev':'';
+    svg.innerHTML+=`<rect class="ll-node-rect ${cls}" x="${x-NW/2}" y="${y-19}" width="${NW}" height="38" rx="8"/>`;
+    svg.innerHTML+=`<text class="ll-label" x="${x}" y="${y}">${v}</text>`;
+    if(label) svg.innerHTML+=`<text class="ll-ptr" x="${x}" y="${y+28}" fill="${cls==='current'?'#a855f7':'#00f5a0'}">${label}</text>`;
+    if(i<REV_VALS.length-1){
+      const nx=startX+(i+1)*spacing;
+      makeArrow(svg,x,y,nx,y,'rgba(255,255,255,0.2)');
+    }
+  });
+  // Reversed portion
+  if(step.reversed.length>0){
+    svg.innerHTML+=`<text x="20" y="145" fill="#6b7280" font-family="Space Mono" font-size="11">Reversed →</text>`;
+    step.reversed.forEach((v,i)=>{
+      const x=startX+i*spacing, ry=148;
+      svg.innerHTML+=`<rect class="ll-node-rect prev" x="${x-NW/2}" y="${ry-19}" width="${NW}" height="38" rx="8"/>`;
+      svg.innerHTML+=`<text class="ll-label" x="${x}" y="${ry}">${v}</text>`;
+      if(i<step.reversed.length-1) makeArrow(svg,x,ry,startX+(i+1)*spacing,ry,'#00f5a0');
+    });
+  }
+}
+
+function revReset(){clearInterval(revTimer);revIdx=0;revSteps=buildRevSteps();drawRevStep(revSteps[0]);document.getElementById('rev-status').textContent='Press Play to begin reversal';}
+function revStep(){if(revIdx>=revSteps.length)return;const s=revSteps[revIdx++];drawRevStep(s);document.getElementById('rev-status').textContent=s.msg;}
+function revPlay(){clearInterval(revTimer);revTimer=setInterval(()=>{revStep();if(revIdx>=revSteps.length)clearInterval(revTimer);},800);}
+revReset();
+
+// ==================== FLOYD'S CYCLE ====================
+// List: 1->2->3->4->5->3 (cycle back to index 2)
+const FLOYD_VALS=[1,2,3,4,5];
+const FLOYD_NEXT=[1,2,3,4,2]; // index of next node (5 points back to 3)
+let floydSteps=[], floydIdx=0, floydTimer=null;
+
+function buildFloydSteps(){
+  const steps=[];
+  let slow=0,fast=0;
+  steps.push({slow,fast,met:false,msg:'slow=head(1), fast=head(1)'});
+  for(let i=0;i<10;i++){
+    slow=FLOYD_NEXT[slow]; fast=FLOYD_NEXT[FLOYD_NEXT[fast]];
+    const met=slow===fast;
+    steps.push({slow,fast,met,msg:met?`slow and fast MEET at node ${FLOYD_VALS[slow]} — cycle detected!`:`slow→${FLOYD_VALS[slow]}, fast→${FLOYD_VALS[fast]}`});
+    if(met)break;
+  }
+  return steps;
+}
+
+function drawFloydStep(step){
+  const svg=document.getElementById('floyd-svg');
+  const W=680, spacing=90, startX=60, y=80;
+  svg.innerHTML='';
+  FLOYD_VALS.forEach((v,i)=>{
+    const x=startX+i*spacing;
+    let cls='';
+    if(step.slow===i&&step.fast===i) cls=step.met?'current':'slow';
+    else if(step.slow===i) cls='slow';
+    else if(step.fast===i) cls='fast';
+    if(FLOYD_NEXT[i]<i||FLOYD_NEXT[i]<=2&&i===4) cls+=' cycle';
+    svg.innerHTML+=`<rect class="ll-node-rect ${cls.trim()}" x="${x-28}" y="${y-19}" width="56" height="38" rx="8"/>`;
+    svg.innerHTML+=`<text class="ll-label" x="${x}" y="${y}">${v}</text>`;
+    const ptrs=[];
+    if(step.slow===i) ptrs.push({t:'S',c:'#38bdf8'});
+    if(step.fast===i) ptrs.push({t:'F',c:'#f59e0b'});
+    if(ptrs.length) svg.innerHTML+=`<text x="${x}" y="${y+32}" text-anchor="middle" font-family="Space Mono" font-size="10" fill="${ptrs[0].c}">${ptrs.map(p=>p.t).join('/')}</text>`;
+  });
+  // Draw arrows
+  FLOYD_VALS.forEach((v,i)=>{
+    const x=startX+i*spacing;
+    const ni=FLOYD_NEXT[i];
+    if(ni>i){makeArrow(svg,x,y,startX+ni*spacing,y,'rgba(255,255,255,0.2)');}
+    else{
+      // cycle-back arc
+      const nx=startX+ni*spacing;
+      svg.innerHTML+=`<path d="M${x+28},${y} C${x+50},${y+60} ${nx-50},${y+60} ${nx-28},${y}" stroke="#ef4444" stroke-width="1.5" fill="none" stroke-dasharray="4"/>`;
+      svg.innerHTML+=`<polygon points="${nx-28},${y} ${nx-20},${y-6} ${nx-20},${y+6}" fill="#ef4444"/>`;
+    }
+  });
+}
+
+function floydReset(){clearInterval(floydTimer);floydIdx=0;floydSteps=buildFloydSteps();drawFloydStep(floydSteps[0]);document.getElementById('floyd-status').textContent='Press Play';}
+function floydStep(){if(floydIdx>=floydSteps.length)return;const s=floydSteps[floydIdx++];drawFloydStep(s);document.getElementById('floyd-status').textContent=s.msg;}
+function floydPlay(){clearInterval(floydTimer);floydTimer=setInterval(()=>{floydStep();if(floydIdx>=floydSteps.length)clearInterval(floydTimer);},800);}
+floydReset();
+
+// ==================== FIND MIDDLE ====================
+const MID_VALS=[10,20,30,40,50,60,70];
+let midSteps=[],midIdx=0,midTimer=null;
+
+function buildMidSteps(){
+  const steps=[];
+  let slow=0,fast=0;
+  steps.push({slow,fast,done:false,msg:'slow=head, fast=head'});
+  while(fast<MID_VALS.length-1&&fast+1<MID_VALS.length-1){
+    slow+=1; fast+=2;
+    const done=fast>=MID_VALS.length-1;
+    steps.push({slow,fast:Math.min(fast,MID_VALS.length-1),done,msg:done?`fast reached end → middle = node ${MID_VALS[slow]}`:`slow→${MID_VALS[slow]}, fast→${MID_VALS[Math.min(fast,MID_VALS.length-1)]}`});
+    if(done)break;
+  }
+  return steps;
+}
+
+function drawMidStep(step){
+  const svg=document.getElementById('mid-svg');
+  svg.innerHTML='';
+  const spacing=84,startX=50,y=65;
+  MID_VALS.forEach((v,i)=>{
+    const x=startX+i*spacing;
+    let cls='';
+    if(step.slow===i&&step.fast===i) cls='slow';
+    else if(step.slow===i) cls=step.done?'current':'slow';
+    else if(step.fast===i) cls='fast';
+    svg.innerHTML+=`<rect class="ll-node-rect ${cls}" x="${x-28}" y="${y-19}" width="56" height="38" rx="8"/>`;
+    svg.innerHTML+=`<text class="ll-label" x="${x}" y="${y}">${v}</text>`;
+    const ptrs=[];
+    if(step.slow===i) ptrs.push('S');
+    if(step.fast===i) ptrs.push('F');
+    if(ptrs.length) svg.innerHTML+=`<text x="${x}" y="${y+32}" text-anchor="middle" font-family="Space Mono" font-size="10" fill="${step.slow===i?'#38bdf8':'#f59e0b'}">${ptrs.join('/')}</text>`;
+    if(i<MID_VALS.length-1) makeArrow(svg,x,y,startX+(i+1)*spacing,y,'rgba(255,255,255,0.18)');
+  });
+}
+
+function midReset(){clearInterval(midTimer);midIdx=0;midSteps=buildMidSteps();drawMidStep(midSteps[0]);document.getElementById('mid-status').textContent='Press Play';}
+function midStep(){if(midIdx>=midSteps.length)return;const s=midSteps[midIdx++];drawMidStep(s);document.getElementById('mid-status').textContent=s.msg;}
+function midPlay(){clearInterval(midTimer);midTimer=setInterval(()=>{midStep();if(midIdx>=midSteps.length)clearInterval(midTimer);},800);}
+midReset();
+
+// ==================== MERGE SORTED ====================
+const ML1=[1,3,5,7],ML2=[2,4,6];
+let mergeSteps=[],mergeIdx=0,mergeTimer=null;
+
+function buildMergeSteps(){
+  const steps=[];
+  let i=0,j=0;
+  const result=[];
+  steps.push({i,j,result:[],msg:'Compare heads: L1[0]='+ML1[0]+' vs L2[0]='+ML2[0]});
+  while(i<ML1.length&&j<ML2.length){
+    if(ML1[i]<=ML2[j]){result.push(ML1[i]);steps.push({i,j,result:[...result],msg:`${ML1[i]} ≤ ${ML2[j]}, take from L1`});i++;}
+    else{result.push(ML2[j]);steps.push({i,j,result:[...result],msg:`${ML2[j]} < ${ML1[i]}, take from L2`});j++;}
+    steps.push({i,j,result:[...result],msg:`Next compare: L1[${i}]=${ML1[i]||'end'} vs L2[${j}]=${ML2[j]||'end'}`});
+  }
+  while(i<ML1.length){result.push(ML1[i]);i++;}
+  while(j<ML2.length){result.push(ML2[j]);j++;}
+  steps.push({i:ML1.length,j:ML2.length,result:[...result],msg:`Done! Merged: [${result.join(', ')}]`});
+  return steps;
+}
+
+function drawMergeStep(step){
+  const svg=document.getElementById('merge-svg');
+  svg.innerHTML='';
+  const nw=50,spacing=64,sx=40;
+  svg.innerHTML+=`<text x="20" y="25" fill="#6b7280" font-family="Space Mono" font-size="11">L1:</text>`;
+  ML1.forEach((v,i)=>{
+    const x=sx+20+i*spacing,y=42;
+    const cls=i===step.i?'current':i<step.i?'prev':'';
+    svg.innerHTML+=`<rect class="ll-node-rect ${cls}" x="${x-25}" y="${y-16}" width="50" height="32" rx="6"/>`;
+    svg.innerHTML+=`<text class="ll-label" x="${x}" y="${y}" font-size="12">${v}</text>`;
+    if(i<ML1.length-1) makeArrow(svg,x,y,sx+20+(i+1)*spacing,y,'rgba(255,255,255,0.18)');
+  });
+  svg.innerHTML+=`<text x="20" y="105" fill="#6b7280" font-family="Space Mono" font-size="11">L2:</text>`;
+  ML2.forEach((v,i)=>{
+    const x=sx+20+i*spacing,y=120;
+    const cls=i===step.j?'fast':i<step.j?'prev':'';
+    svg.innerHTML+=`<rect class="ll-node-rect ${cls}" x="${x-25}" y="${y-16}" width="50" height="32" rx="6"/>`;
+    svg.innerHTML+=`<text class="ll-label" x="${x}" y="${y}" font-size="12">${v}</text>`;
+    if(i<ML2.length-1) makeArrow(svg,x,y,sx+20+(i+1)*spacing,y,'rgba(255,255,255,0.18)');
+  });
+  if(step.result.length>0){
+    svg.innerHTML+=`<text x="20" y="188" fill="#6b7280" font-family="Space Mono" font-size="11">Merged:</text>`;
+    step.result.forEach((v,i)=>{
+      const x=sx+20+i*spacing,y=205;
+      svg.innerHTML+=`<rect class="ll-node-rect merged" x="${x-25}" y="${y-16}" width="50" height="32" rx="6"/>`;
+      svg.innerHTML+=`<text class="ll-label" x="${x}" y="${y}" font-size="12">${v}</text>`;
+      if(i<step.result.length-1) makeArrow(svg,x,y,sx+20+(i+1)*spacing,y,'#00f5a0');
+    });
+  }
+}
+
+function mergeReset(){clearInterval(mergeTimer);mergeIdx=0;mergeSteps=buildMergeSteps();drawMergeStep(mergeSteps[0]);document.getElementById('merge-status').textContent='Press Play';}
+function mergeStep(){if(mergeIdx>=mergeSteps.length)return;const s=mergeSteps[mergeIdx++];drawMergeStep(s);document.getElementById('merge-status').textContent=s.msg;}
+function mergePlay(){clearInterval(mergeTimer);mergeTimer=setInterval(()=>{mergeStep();if(mergeIdx>=mergeSteps.length)clearInterval(mergeTimer);},750);}
+mergeReset();
+
+function switchTab(name,btn){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+name).classList.add('active');btn.classList.add('active');}
+function toggleQ(card){card.querySelector('.q-body').classList.toggle('open');}
+</script>
+</body>
+</html>

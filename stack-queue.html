@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stack & Queue — DSA Forge</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:rgba(255,255,255,0.08);--border-bright:rgba(255,255,255,0.18);--accent:#fb923c;--accent2:#00f5a0;--accent3:#38bdf8;--text:#f0f0f8;--muted:#6b7280;--danger:#ef4444;--mono:'Space Mono',monospace;--display:'Syne',sans-serif;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--display);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(251,146,60,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(251,146,60,0.025) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.container{max-width:1100px;margin:0 auto;padding:0 2rem;position:relative;z-index:1;}
+nav{border-bottom:1px solid var(--border);padding:1.2rem 0;background:rgba(10,10,15,0.92);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;}
+.logo{font-family:var(--mono);font-size:1.1rem;color:#00f5a0;text-decoration:none;}
+.logo span{color:var(--text);}
+.nav-links{display:flex;gap:1.5rem;list-style:none;}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:0.82rem;transition:color 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:#00f5a0;}
+.page-hero{padding:4rem 0 2rem;}
+.breadcrumb{font-family:var(--mono);font-size:0.75rem;color:var(--muted);margin-bottom:1rem;}
+.breadcrumb a{color:var(--muted);text-decoration:none;}
+.page-title{font-size:clamp(2.5rem,5vw,4rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:1rem;}
+.page-title span{color:var(--accent);}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin:1.5rem 0 0;overflow-x:auto;}
+.tab-btn{font-family:var(--mono);font-size:0.78rem;padding:0.75rem 1.2rem;background:transparent;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color 0.2s,border-color 0.2s;}
+.tab-btn:hover{color:var(--text);}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-content{display:none;padding:2.5rem 0;}
+.tab-content.active{display:block;}
+.pattern-tag{display:inline-block;font-family:var(--mono);font-size:0.7rem;color:var(--accent);border:1px solid rgba(251,146,60,0.3);padding:3px 10px;border-radius:999px;margin-bottom:0.75rem;}
+.pattern-name{font-size:1.8rem;font-weight:700;margin-bottom:0.75rem;}
+.pattern-desc{color:var(--muted);line-height:1.8;max-width:700px;font-size:0.95rem;margin-bottom:1.5rem;}
+.viz-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;}
+.viz-title{font-family:var(--mono);font-size:0.72rem;color:var(--muted);margin-bottom:1.25rem;letter-spacing:0.06em;}
+.controls{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:1rem;}
+.ctrl-btn{font-family:var(--mono);font-size:0.72rem;padding:6px 14px;border-radius:7px;border:1px solid var(--border-bright);background:var(--surface2);color:var(--text);cursor:pointer;transition:all 0.15s;}
+.ctrl-btn:hover{border-color:var(--accent);color:var(--accent);}
+.ctrl-btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:700;}
+.ctrl-btn.primary:hover{opacity:0.85;}
+.status-line{font-family:var(--mono);font-size:0.75rem;color:var(--accent);min-height:1.4rem;margin-top:0.75rem;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem;}
+@media(max-width:700px){.two-col{grid-template-columns:1fr;}}
+.code-block{background:#0d1117;border:1px solid var(--border);border-radius:10px;padding:1.25rem;overflow-x:auto;font-family:var(--mono);font-size:0.76rem;line-height:1.8;color:#e6edf3;}
+.code-block .kw{color:#ff7b72;}.code-block .fn{color:#d2a8ff;}.code-block .cm{color:#8b949e;font-style:italic;}.code-block .num{color:#79c0ff;}
+.info-box{background:rgba(251,146,60,0.05);border:1px solid rgba(251,146,60,0.2);border-radius:8px;padding:1rem 1.25rem;margin:1rem 0;}
+.info-box p{font-size:0.84rem;color:var(--muted);line-height:1.7;}
+.info-box strong{color:var(--accent);}
+.q-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;cursor:pointer;transition:border-color 0.2s;margin-bottom:0.75rem;}
+.q-card:hover{border-color:var(--border-bright);}
+.q-header{display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+.q-title{font-weight:600;font-size:0.9rem;}
+.q-difficulty{font-family:var(--mono);font-size:0.7rem;padding:2px 8px;border-radius:999px;}
+.easy{color:#00f5a0;border:1px solid rgba(0,245,160,0.3);}
+.medium{color:var(--accent);border:1px solid rgba(251,146,60,0.3);}
+.hard{color:var(--danger);border:1px solid rgba(239,68,68,0.3);}
+.q-body{display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);}
+.q-body.open{display:block;}
+.q-desc{color:var(--muted);font-size:0.84rem;line-height:1.7;margin-bottom:0.75rem;}
+.q-approach{font-size:0.82rem;line-height:1.7;}
+.q-approach strong{color:var(--accent);}
+
+/* Stack/Queue visual */
+.stack-scene{display:flex;gap:2.5rem;align-items:flex-end;flex-wrap:wrap;min-height:180px;}
+.stack-col{display:flex;flex-direction:column-reverse;gap:4px;align-items:center;}
+.stack-col-label{font-family:var(--mono);font-size:0.72rem;color:var(--muted);margin-top:8px;text-align:center;}
+.stack-item{width:60px;height:36px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:0.85rem;font-weight:700;border-radius:6px;border:1px solid;transition:all 0.3s;}
+.stack-item.default{background:var(--surface2);border-color:rgba(255,255,255,0.2);color:var(--text);}
+.stack-item.active{background:rgba(251,146,60,0.3);border-color:var(--accent);color:var(--accent);}
+.stack-item.popped{background:rgba(239,68,68,0.2);border-color:var(--danger);color:var(--danger);}
+.stack-item.top{background:rgba(0,245,160,0.15);border-color:#00f5a0;color:#00f5a0;}
+
+/* Array display */
+.arr-row{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin:0.5rem 0;}
+.arr-cell{width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:0.85rem;font-weight:700;background:var(--surface2);border:1px solid var(--border-bright);border-radius:6px;transition:all 0.3s;}
+.arr-cell.current{background:rgba(251,146,60,0.3);border-color:var(--accent);color:var(--accent);}
+.arr-cell.in-window{background:rgba(56,189,248,0.2);border-color:#38bdf8;}
+.arr-cell.max-cell{background:rgba(0,245,160,0.2);border-color:#00f5a0;color:#00f5a0;}
+.arr-label{font-family:var(--mono);font-size:0.72rem;color:var(--muted);margin-right:8px;}
+
+/* Parentheses */
+.paren-display{font-family:var(--mono);font-size:1.8rem;letter-spacing:0.1em;min-height:2.5rem;display:flex;align-items:center;flex-wrap:wrap;gap:4px;}
+.paren-char{transition:all 0.3s;padding:2px 4px;border-radius:4px;}
+.paren-char.matched{color:#00f5a0;background:rgba(0,245,160,0.15);}
+.paren-char.current{color:var(--accent);background:rgba(251,146,60,0.2);border:1px solid var(--accent);}
+.paren-char.invalid{color:var(--danger);background:rgba(239,68,68,0.15);}
+.paren-char.default{color:var(--text);}
+</style>
+</head>
+<body>
+<nav>
+  <div class="container nav-inner">
+    <a href="index.html" class="logo">DSA<span>Forge</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="arrays.html">Arrays</a></li>
+      <li><a href="trees.html">Trees</a></li>
+      <li><a href="graphs.html">Graphs</a></li>
+      <li><a href="dp.html">DP</a></li>
+      <li><a href="stack-queue.html" class="active">Stack/Queue</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-hero">
+    <div class="breadcrumb"><a href="index.html">Home</a> / Stack &amp; Queue</div>
+    <h1 class="page-title">Stack &amp; <span>Queue</span></h1>
+    <p style="color:var(--muted);line-height:1.7;max-width:600px">Monotonic stack, valid parentheses, sliding window maximum — the patterns that turn O(n²) into O(n) with a simple data structure.</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('basics',this)">Stack Basics</button>
+    <button class="tab-btn" onclick="switchTab('parens',this)">Valid Parens</button>
+    <button class="tab-btn" onclick="switchTab('monotonic',this)">Monotonic Stack</button>
+    <button class="tab-btn" onclick="switchTab('swmax',this)">Sliding Window Max</button>
+    <button class="tab-btn" onclick="switchTab('questions',this)">Questions</button>
+  </div>
+
+  <!-- STACK BASICS -->
+  <div id="tab-basics" class="tab-content active">
+    <div class="pattern-tag">DATA STRUCTURE</div>
+    <div class="pattern-name">Stack (LIFO) & Queue (FIFO)</div>
+    <p class="pattern-desc">Stack: Last-In-First-Out — push to top, pop from top. Queue: First-In-First-Out — enqueue at back, dequeue from front. Both O(1) for core operations.</p>
+    <div class="viz-box">
+      <div class="viz-title">// INTERACTIVE — push and pop to see LIFO in action</div>
+      <div class="stack-scene">
+        <div>
+          <div class="stack-col" id="stack-col"></div>
+          <div class="stack-col-label">Stack<br>(LIFO)</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.75rem;justify-content:center;padding-bottom:28px;">
+          <button class="ctrl-btn primary" onclick="stackPush()">Push →</button>
+          <button class="ctrl-btn" onclick="stackPop()">← Pop</button>
+          <div style="font-family:var(--mono);font-size:0.72rem;color:var(--muted);">Input:</div>
+          <input id="stack-input" type="number" value="42" style="width:70px;font-family:var(--mono);font-size:0.8rem;padding:5px 8px;background:var(--surface2);border:1px solid var(--border-bright);border-radius:6px;color:var(--text);">
+        </div>
+        <div>
+          <div id="queue-display" style="display:flex;flex-direction:column;gap:4px;"></div>
+          <div class="stack-col-label">Queue<br>(FIFO)</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.75rem;justify-content:center;padding-bottom:28px;">
+          <button class="ctrl-btn primary" onclick="queueEnq()">Enqueue →</button>
+          <button class="ctrl-btn" onclick="queueDeq()">← Dequeue</button>
+        </div>
+      </div>
+      <div class="status-line" id="basics-status">Push values to the stack, or enqueue to the queue</div>
+    </div>
+    <div class="two-col">
+      <div class="code-block">
+<span class="cm"># Python stack — use a list</span>
+stack = []
+stack.append(<span class="num">1</span>)   <span class="cm"># push</span>
+stack.append(<span class="num">2</span>)
+stack.append(<span class="num">3</span>)
+top = stack[-<span class="num">1</span>]   <span class="cm"># peek: 3</span>
+val = stack.pop() <span class="cm"># pop: 3</span>
+
+<span class="cm"># Python queue — use deque</span>
+<span class="kw">from</span> collections <span class="kw">import</span> deque
+queue = deque()
+queue.append(<span class="num">1</span>)    <span class="cm"># enqueue</span>
+queue.append(<span class="num">2</span>)
+front = queue[<span class="num">0</span>]   <span class="cm"># peek front</span>
+val = queue.popleft() <span class="cm"># dequeue: 1</span>
+
+<span class="cm"># Monotonic deque for O(1) max/min</span>
+mono = deque()      <span class="cm"># stores indices</span></div>
+      <div class="code-block">
+<span class="cm"># STACK USE CASES:
+# - Function call stack (recursion)
+# - Undo/redo operations
+# - Valid parentheses matching
+# - DFS (iterative)
+# - Monotonic stack patterns
+# - Expression evaluation
+
+# QUEUE USE CASES:
+# - BFS
+# - Process scheduling
+# - Event queues
+# - Sliding window maximum (deque)
+
+# DEQUE (double-ended queue):
+# O(1) push/pop from BOTH ends
+# Used for: sliding window max,
+#           palindrome check,
+#           BFS with priority</span></div>
+    </div>
+  </div>
+
+  <!-- VALID PARENS -->
+  <div id="tab-parens" class="tab-content">
+    <div class="pattern-tag">PATTERN — STACK MATCHING</div>
+    <div class="pattern-name">Valid Parentheses</div>
+    <p class="pattern-desc">Use a stack to match opening brackets with closing ones. Push open brackets; when a close bracket is encountered, pop and check if it matches. Stack empty at the end = valid.</p>
+    <div class="viz-box">
+      <div class="viz-title">// VALID PARENTHESES — watch the stack build and shrink</div>
+      <div style="margin-bottom:1rem;">
+        <label style="font-family:var(--mono);font-size:0.75rem;color:var(--muted);">Input string:</label>
+        <input id="paren-input" value="{[()]}" style="margin-left:8px;font-family:var(--mono);font-size:1rem;padding:6px 12px;background:var(--surface2);border:1px solid var(--border-bright);border-radius:7px;color:var(--text);width:180px;">
+        <button class="ctrl-btn primary" onclick="parenLoad()" style="margin-left:8px;">Load</button>
+      </div>
+      <div class="paren-display" id="paren-display"></div>
+      <div style="margin-top:1.25rem;display:flex;gap:2rem;align-items:flex-end;flex-wrap:wrap;">
+        <div>
+          <div style="font-family:var(--mono);font-size:0.72rem;color:var(--muted);margin-bottom:6px;">Stack:</div>
+          <div style="display:flex;gap:4px;" id="paren-stack"></div>
+        </div>
+      </div>
+      <div class="status-line" id="paren-status">Load a string and press Play</div>
+      <div class="controls">
+        <button class="ctrl-btn primary" onclick="parenPlay()">▶ Play</button>
+        <button class="ctrl-btn" onclick="parenStep()">Step →</button>
+        <button class="ctrl-btn" onclick="parenReset()">↺ Reset</button>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="code-block">
+<span class="kw">def</span> <span class="fn">is_valid</span>(s):
+  stack = []
+  pairs = {')':'(', ']':'[', '}':'{'}
+
+  <span class="kw">for</span> ch <span class="kw">in</span> s:
+    <span class="kw">if</span> ch <span class="kw">in</span> '([{':
+      stack.append(ch)  <span class="cm"># push open</span>
+    <span class="kw">elif</span> ch <span class="kw">in</span> ')]}':
+      <span class="kw">if not</span> stack <span class="kw">or</span> stack[-<span class="num">1</span>] != pairs[ch]:
+        <span class="kw">return False</span>  <span class="cm"># mismatch!</span>
+      stack.pop()
+
+  <span class="kw">return</span> len(stack) == <span class="num">0</span>
+
+<span class="cm"># Time: O(n)  Space: O(n)
+# Key: pairs map lets you check
+# if popped bracket matches closer</span></div>
+      <div class="code-block">
+<span class="cm"># RELATED: Longest Valid Parentheses (LC 32)
+# Use stack storing indices.
+# Push -1 as base. For each ')':
+#   pop top. If stack empty, push i.
+#   Else: length = i - stack[-1]
+
+# DAILY TEMPERATURES (LC 739)
+# Monotonic stack of indices.
+# Pop when current temp > stack top.
+
+# ASTEROID COLLISION (LC 735)
+# Stack-based simulation.
+# Push +asteroid, collide -asteroid
+# with stack top.
+
+# REMOVE K DIGITS (LC 402)
+# Monotonic stack to keep smallest.
+# If curr < stack top, pop (k times).
+# Result = stack + remaining.</span></div>
+    </div>
+  </div>
+
+  <!-- MONOTONIC STACK -->
+  <div id="tab-monotonic" class="tab-content">
+    <div class="pattern-tag">PATTERN — MONOTONIC STACK</div>
+    <div class="pattern-name">Monotonic Stack</div>
+    <p class="pattern-desc">A stack that is kept in monotonically increasing or decreasing order. Pop elements that violate the order — the popping event answers "next greater element" queries in O(n) total.</p>
+    <div class="info-box"><p><strong>Key insight:</strong> When you pop an element because the current element is larger, the current element IS the "next greater element" for the popped one. This answers all NGE queries in a single pass.</p></div>
+    <div class="viz-box">
+      <div class="viz-title">// NEXT GREATER ELEMENT — monotonic decreasing stack</div>
+      <div class="arr-row" id="mono-arr"></div>
+      <div style="margin-top:1rem;font-family:var(--mono);font-size:0.75rem;color:var(--muted);">Stack (indices, decreasing values):</div>
+      <div style="display:flex;gap:4px;margin-top:6px;" id="mono-stack"></div>
+      <div style="margin-top:1rem;font-family:var(--mono);font-size:0.75rem;color:var(--muted);">NGE result:</div>
+      <div style="display:flex;gap:4px;margin-top:6px;" id="mono-result"></div>
+      <div class="status-line" id="mono-status">Press Play</div>
+      <div class="controls">
+        <button class="ctrl-btn primary" onclick="monoPlay()">▶ Play</button>
+        <button class="ctrl-btn" onclick="monoStep()">Step →</button>
+        <button class="ctrl-btn" onclick="monoReset()">↺ Reset</button>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="code-block">
+<span class="cm"># NEXT GREATER ELEMENT — O(n)</span>
+<span class="kw">def</span> <span class="fn">next_greater</span>(arr):
+  n = len(arr)
+  result = [-<span class="num">1</span>] * n  <span class="cm"># default: no NGE</span>
+  stack = []  <span class="cm"># stores INDICES</span>
+
+  <span class="kw">for</span> i <span class="kw">in</span> range(n):
+    <span class="cm"># Pop elements smaller than arr[i]</span>
+    <span class="kw">while</span> stack <span class="kw">and</span> arr[stack[-<span class="num">1</span>]] < arr[i]:
+      idx = stack.pop()
+      result[idx] = arr[i]  <span class="cm"># arr[i] is NGE!</span>
+    stack.append(i)
+
+  <span class="kw">return</span> result
+<span class="cm"># Each element pushed/popped at most once
+# → O(n) total, not O(n²)</span></div>
+      <div class="code-block">
+<span class="cm"># DAILY TEMPERATURES (LC 739)</span>
+<span class="kw">def</span> <span class="fn">daily_temperatures</span>(T):
+  n = len(T)
+  result = [<span class="num">0</span>] * n
+  stack = []  <span class="cm"># monotonic decreasing</span>
+  <span class="kw">for</span> i <span class="kw">in</span> range(n):
+    <span class="kw">while</span> stack <span class="kw">and</span> T[stack[-<span class="num">1</span>]] < T[i]:
+      j = stack.pop()
+      result[j] = i - j  <span class="cm"># days to wait</span>
+    stack.append(i)
+  <span class="kw">return</span> result
+
+<span class="cm"># LARGEST RECTANGLE IN HISTOGRAM (LC 84)
+# Monotonic increasing stack.
+# For each bar, pop bars taller than it.
+# Width = i - stack[-1] - 1
+# Area = height × width</span></div>
+    </div>
+  </div>
+
+  <!-- SLIDING WINDOW MAX -->
+  <div id="tab-swmax" class="tab-content">
+    <div class="pattern-tag">PATTERN — MONOTONIC DEQUE</div>
+    <div class="pattern-name">Sliding Window Maximum</div>
+    <p class="pattern-desc">Find the maximum in each window of size k. Naïve is O(nk). With a monotonic deque (always keeps indices of potentially-max elements), it's O(n) — front is always the window maximum.</p>
+    <div class="viz-box">
+      <div class="viz-title">// SLIDING WINDOW MAX — k=3, deque shown below array</div>
+      <div style="font-family:var(--mono);font-size:0.75rem;color:var(--muted);margin-bottom:6px;">Array:</div>
+      <div class="arr-row" id="swmax-arr"></div>
+      <div style="font-family:var(--mono);font-size:0.75rem;color:var(--muted);margin-top:1rem;margin-bottom:6px;">Deque (indices, values decreasing):</div>
+      <div style="display:flex;gap:4px;" id="swmax-deque"></div>
+      <div style="font-family:var(--mono);font-size:0.75rem;color:var(--muted);margin-top:1rem;margin-bottom:6px;">Window maximums:</div>
+      <div style="display:flex;gap:4px;" id="swmax-result"></div>
+      <div class="status-line" id="swmax-status">Press Play</div>
+      <div class="controls">
+        <button class="ctrl-btn primary" onclick="swmaxPlay()">▶ Play</button>
+        <button class="ctrl-btn" onclick="swmaxStep()">Step →</button>
+        <button class="ctrl-btn" onclick="swmaxReset()">↺ Reset</button>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="code-block">
+<span class="kw">from</span> collections <span class="kw">import</span> deque
+
+<span class="kw">def</span> <span class="fn">sliding_window_max</span>(nums, k):
+  dq = deque()  <span class="cm"># stores INDICES</span>
+  result = []
+
+  <span class="kw">for</span> i, n <span class="kw">in</span> enumerate(nums):
+    <span class="cm"># Remove out-of-window indices</span>
+    <span class="kw">while</span> dq <span class="kw">and</span> dq[<span class="num">0</span>] < i - k + <span class="num">1</span>:
+      dq.popleft()
+
+    <span class="cm"># Remove smaller elements from back</span>
+    <span class="kw">while</span> dq <span class="kw">and</span> nums[dq[-<span class="num">1</span>]] <= n:
+      dq.pop()
+
+    dq.append(i)
+
+    <span class="cm"># Front is always the window max</span>
+    <span class="kw">if</span> i >= k - <span class="num">1</span>:
+      result.append(nums[dq[<span class="num">0</span>]])
+
+  <span class="kw">return</span> result  <span class="cm"># O(n) total</span></div>
+      <div class="code-block">
+<span class="cm"># WHY THIS WORKS:
+# The deque is monotonically decreasing.
+# Any element smaller than the new element
+# can NEVER be a future window max
+# (new element is larger AND newer) → remove.
+#
+# Front of deque = index of window max.
+# When front goes out of window → remove.
+#
+# Example: nums=[1,3,1,2,0,5], k=3
+# i=0: deque=[0]
+# i=1: 3>1, pop 0 → deque=[1]
+# i=2: deque=[1,2], window[0..2] max=3
+# i=3: 2>1, pop 2 → deque=[1,3], max=3
+# i=4: deque=[1,3,4], max=2
+# i=5: 5>all, pop all → deque=[5], max=5</span></div>
+    </div>
+  </div>
+
+  <!-- QUESTIONS -->
+  <div id="tab-questions" class="tab-content">
+    <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:1.5rem;">Famous Stack &amp; Queue Questions</h2>
+    <div class="q-card" onclick="toggleQ(this)">
+      <div class="q-header"><span class="q-title">Min Stack (LeetCode 155)</span><span class="q-difficulty medium">Medium</span></div>
+      <div class="q-body"><p class="q-desc">Design a stack supporting push, pop, top, and getMin in O(1).</p><div class="q-approach"><strong>Approach:</strong> Maintain two stacks — main stack and min stack. Min stack stores the current minimum at each level. Push to min stack only when new val ≤ current min. Pop from both when popping main stack.</div></div>
+    </div>
+    <div class="q-card" onclick="toggleQ(this)">
+      <div class="q-header"><span class="q-title">Largest Rectangle in Histogram (LeetCode 84)</span><span class="q-difficulty hard">Hard</span></div>
+      <div class="q-body"><p class="q-desc">Find the largest rectangle in a histogram.</p><div class="q-approach"><strong>Monotonic increasing stack:</strong> For each bar, pop all taller bars when current bar is shorter. For each popped bar, width = current_index − new_stack_top − 1. Area = height × width. Track maximum. Add sentinel 0 at the end.</div></div>
+    </div>
+    <div class="q-card" onclick="toggleQ(this)">
+      <div class="q-header"><span class="q-title">Decode String (LeetCode 394)</span><span class="q-difficulty medium">Medium</span></div>
+      <div class="q-body"><p class="q-desc">Decode strings like "3[a2[bc]]" → "abcbcabcbcabcbc".</p><div class="q-approach"><strong>Stack-based:</strong> Maintain stacks for current string and current count. When '[' is hit, push both. When ']' is hit, pop count and prev_string, append current string × count to prev. O(n × maxCount).</div></div>
+    </div>
+    <div class="q-card" onclick="toggleQ(this)">
+      <div class="q-header"><span class="q-title">Basic Calculator II (LeetCode 227)</span><span class="q-difficulty medium">Medium</span></div>
+      <div class="q-body"><p class="q-desc">Evaluate string expression with +, -, *, /.</p><div class="q-approach"><strong>Stack + sign tracking:</strong> Parse numbers. On +/−, push ±number to stack. On ×/÷, pop top and push result. Sum the stack at the end. Key: multiplication/division take priority by consuming the previous number immediately.</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== STACK BASICS ====================
+let stackArr=[], queueArr=[];
+const PUSH_VALS=[5,12,7,3,9];let pushIdx=0;
+
+function renderStack(){
+  const col=document.getElementById('stack-col');
+  col.innerHTML=stackArr.map((v,i)=>`<div class="stack-item ${i===stackArr.length-1?'top':'default'}">${v}</div>`).join('');
+}
+function renderQueue(){
+  const el=document.getElementById('queue-display');
+  el.innerHTML=queueArr.map((v,i)=>`<div class="stack-item ${i===0?'top':'default'}" style="width:80px">${v}</div>`).join('');
+}
+function stackPush(){
+  const v=parseInt(document.getElementById('stack-input').value)||PUSH_VALS[pushIdx%PUSH_VALS.length];
+  pushIdx++;
+  stackArr.push(v);renderStack();
+  document.getElementById('basics-status').textContent=`Pushed ${v}. Stack top = ${stackArr[stackArr.length-1]}`;
+}
+function stackPop(){
+  if(!stackArr.length){document.getElementById('basics-status').textContent='Stack is empty!';return;}
+  const v=stackArr.pop();renderStack();
+  document.getElementById('basics-status').textContent=`Popped ${v}. Stack size = ${stackArr.length}`;
+}
+function queueEnq(){
+  const v=parseInt(document.getElementById('stack-input').value)||PUSH_VALS[pushIdx%PUSH_VALS.length];
+  pushIdx++;
+  queueArr.push(v);renderQueue();
+  document.getElementById('basics-status').textContent=`Enqueued ${v}. Front = ${queueArr[0]}`;
+}
+function queueDeq(){
+  if(!queueArr.length){document.getElementById('basics-status').textContent='Queue is empty!';return;}
+  const v=queueArr.shift();renderQueue();
+  document.getElementById('basics-status').textContent=`Dequeued ${v}. New front = ${queueArr[0]??'empty'}`;
+}
+renderStack();renderQueue();
+
+// ==================== VALID PARENS ====================
+let parenStr='{[()]}', parenSteps=[], parenIdx=0, parenTimer=null;
+
+function buildParenSteps(s){
+  const steps=[];const stack=[];const pairs={')':`(`,'}':`{`,']':'['};
+  const charStates=Array(s.length).fill('default');
+  for(let i=0;i<s.length;i++){
+    const ch=s[i];
+    const states=[...charStates]; states[i]='current';
+    if('([{'.includes(ch)){
+      stack.push({ch,idx:i});
+      steps.push({states:[...states],stack:[...stack],msg:`Push '${ch}' onto stack. Stack size: ${stack.length}`});
+    } else {
+      if(!stack.length||stack[stack.length-1].ch!==pairs[ch]){
+        states[i]='invalid';
+        steps.push({states,stack:[...stack],msg:`Mismatch! '${ch}' has no matching opener → INVALID`});
+        return steps;
+      }
+      const top=stack.pop();
+      states[top.idx]='matched'; states[i]='matched';
+      steps.push({states:[...states],stack:[...stack],msg:`Matched '${top.ch}' with '${ch}'. Stack size: ${stack.length}`});
+    }
+  }
+  const valid=stack.length===0;
+  steps.push({states:charStates.map((_,i)=>'matched'),stack:[],msg:valid?'✓ VALID — stack is empty!':'✗ INVALID — unmatched brackets remain'});
+  return steps;
+}
+
+function parenLoad(){parenStr=document.getElementById('paren-input').value;parenReset();}
+function parenReset(){clearInterval(parenTimer);parenIdx=0;parenSteps=buildParenSteps(parenStr);
+  document.getElementById('paren-display').innerHTML=parenStr.split('').map((c,i)=>`<span class="paren-char default" id="pc-${i}">${c}</span>`).join('');
+  document.getElementById('paren-stack').innerHTML='';
+  document.getElementById('paren-status').textContent='Load a string and press Play';}
+function parenStep(){
+  if(parenIdx>=parenSteps.length)return;
+  const s=parenSteps[parenIdx++];
+  s.states.forEach((cls,i)=>{const el=document.getElementById('pc-'+i);if(el)el.className='paren-char '+cls;});
+  document.getElementById('paren-stack').innerHTML=s.stack.map(x=>`<div class="stack-item active">${x.ch}</div>`).join('');
+  document.getElementById('paren-status').textContent=s.msg;
+}
+function parenPlay(){clearInterval(parenTimer);parenTimer=setInterval(()=>{parenStep();if(parenIdx>=parenSteps.length)clearInterval(parenTimer);},700);}
+parenReset();
+
+// ==================== MONOTONIC STACK ====================
+const MONO_ARR=[4,5,2,10,8,3,7];
+let monoSteps=[],monoIdx=0,monoTimer=null;
+
+function buildMonoSteps(){
+  const steps=[];const stack=[];const result=new Array(MONO_ARR.length).fill(-1);
+  for(let i=0;i<MONO_ARR.length;i++){
+    while(stack.length&&MONO_ARR[stack[stack.length-1]]<MONO_ARR[i]){
+      const j=stack.pop();result[j]=MONO_ARR[i];
+      steps.push({curr:i,stack:[...stack],result:[...result],msg:`arr[${j}]=${MONO_ARR[j]} < arr[${i}]=${MONO_ARR[i]} → NGE of ${MONO_ARR[j]} is ${MONO_ARR[i]}`});
+    }
+    stack.push(i);
+    steps.push({curr:i,stack:[...stack],result:[...result],msg:`Push index ${i} (val=${MONO_ARR[i]}) onto stack`});
+  }
+  return steps;
+}
+
+function renderMonoArr(curr,result){
+  document.getElementById('mono-arr').innerHTML=MONO_ARR.map((v,i)=>`<div class="arr-cell${i===curr?' current':result[i]!==-1?' max-cell':''}">${v}</div>`).join('');
+  document.getElementById('mono-result').innerHTML=MONO_ARR.map((v,i)=>`<div class="arr-cell${result[i]!==-1?' max-cell':''}">${result[i]===-1?'—':result[i]}</div>`).join('');
+}
+function renderMonoStack(stack){
+  document.getElementById('mono-stack').innerHTML=stack.map(i=>`<div class="stack-item active">${MONO_ARR[i]}(${i})</div>`).join('');
+}
+function monoReset(){clearInterval(monoTimer);monoIdx=0;monoSteps=buildMonoSteps();renderMonoArr(-1,new Array(MONO_ARR.length).fill(-1));renderMonoStack([]);document.getElementById('mono-status').textContent='Press Play';}
+function monoStep(){if(monoIdx>=monoSteps.length)return;const s=monoSteps[monoIdx++];renderMonoArr(s.curr,s.result);renderMonoStack(s.stack);document.getElementById('mono-status').textContent=s.msg;}
+function monoPlay(){clearInterval(monoTimer);monoTimer=setInterval(()=>{monoStep();if(monoIdx>=monoSteps.length)clearInterval(monoTimer);},800);}
+monoReset();
+
+// ==================== SLIDING WINDOW MAX ====================
+const SWMAX_ARR=[1,3,1,2,5,2,4];const SWMAX_K=3;
+let swmaxSteps=[],swmaxIdx=0,swmaxTimer=null;
+
+function buildSwmaxSteps(){
+  const steps=[];const dq=[];const result=[];
+  for(let i=0;i<SWMAX_ARR.length;i++){
+    while(dq.length&&dq[0]<i-SWMAX_K+1)dq.shift();
+    while(dq.length&&SWMAX_ARR[dq[dq.length-1]]<=SWMAX_ARR[i])dq.pop();
+    dq.push(i);
+    const windowStart=Math.max(0,i-SWMAX_K+1);
+    if(i>=SWMAX_K-1)result.push(SWMAX_ARR[dq[0]]);
+    steps.push({curr:i,windowStart,dq:[...dq],result:[...result],msg:`i=${i}: deque=[${dq.map(j=>SWMAX_ARR[j]).join(',')}], window max=${SWMAX_ARR[dq[0]]}`});
+  }
+  return steps;
+}
+
+function renderSwmax(curr,windowStart,dq,result){
+  document.getElementById('swmax-arr').innerHTML=SWMAX_ARR.map((v,i)=>`<div class="arr-cell${i===curr?' current':i>=windowStart&&i<=curr?' in-window':''}">${v}</div>`).join('');
+  document.getElementById('swmax-deque').innerHTML=dq.map(i=>`<div class="arr-cell active">${SWMAX_ARR[i]}</div>`).join('');
+  document.getElementById('swmax-result').innerHTML=result.map(v=>`<div class="arr-cell max-cell">${v}</div>`).join('');
+}
+function swmaxReset(){clearInterval(swmaxTimer);swmaxIdx=0;swmaxSteps=buildSwmaxSteps();renderSwmax(-1,0,[],[]);document.getElementById('swmax-status').textContent='Press Play';}
+function swmaxStep(){if(swmaxIdx>=swmaxSteps.length)return;const s=swmaxSteps[swmaxIdx++];renderSwmax(s.curr,s.windowStart,s.dq,s.result);document.getElementById('swmax-status').textContent=s.msg;}
+function swmaxPlay(){clearInterval(swmaxTimer);swmaxTimer=setInterval(()=>{swmaxStep();if(swmaxIdx>=swmaxSteps.length)clearInterval(swmaxTimer);},800);}
+swmaxReset();
+
+function switchTab(name,btn){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+name).classList.add('active');btn.classList.add('active');}
+function toggleQ(card){card.querySelector('.q-body').classList.toggle('open');}
+</script>
+</body>
+</html>
